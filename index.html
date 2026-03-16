@@ -531,7 +531,7 @@ table.fin tfoot .td-monto{color:var(--mar);font-size:14px;}
       </div>
     </div>
     <div class="hdr-r">
-      <div class="sync-bar" onclick="showFbModal()" title="Estado de sincronización">
+      <div class="sync-bar" title="Estado de sincronización Supabase">
         <span class="sync-dot off" id="syncDot"></span>
         <span class="sync-lbl" id="syncLbl">Sin sync</span>
       </div>
@@ -2631,15 +2631,18 @@ function fbLimpiarTodo(){
   });
 }
 
-// ── Auto-init ─────────────────────────────────────────────────────
+// ── Auto-init — credenciales fijas ────────────────────────────────
+const SB_HARDCODED = {
+  url: "https://nozambkjwkmvusvuqyiu.supabase.co",
+  key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vemFtYmtqd2ttdnVzdnVxeWl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTE1NzQsImV4cCI6MjA4OTI2NzU3NH0.NSXp5_Wvnh9-WSIOYlMtfYa0yQFBYZ0INHo7zqwbcX0"
+};
+
 (function(){
-  const cfg = getFbConfig();
-  if(cfg && cfg.url && cfg.key){
-    setSyncStatus("warn","Conectando...");
-    setTimeout(()=>initSupabase(cfg, false), 600);
-  } else {
-    setSyncStatus("off","Sin sync");
-  }
+  // Siempre usar credenciales fijas — no requiere configuración manual
+  setSyncStatus("warn","Conectando...");
+  // Save to localStorage so modal shows them if opened
+  localStorage.setItem(FB_CFG_KEY, JSON.stringify(SB_HARDCODED));
+  setTimeout(()=>initSupabase(SB_HARDCODED, false), 600);
 })();
 
 </script>
