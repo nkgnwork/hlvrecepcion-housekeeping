@@ -409,6 +409,25 @@ table.reg tr:hover td{background:var(--s2);}
 .hk-logout:hover{background:rgba(255,255,255,0.25);}
 .hk-checkin-badge{display:inline-block;background:#003580;color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;margin-top:3px;}
 
+/* ═══ HK ARRIVALS ═══ */
+.hk-arrival-card{background:rgba(255,248,210,0.97);border-radius:16px;padding:16px;box-shadow:0 4px 20px rgba(0,0,0,0.2);border:2px solid rgba(0,53,128,0.25);}
+.hk-arrival-card.supplies-ok{background:rgba(200,255,220,0.95);border-color:rgba(26,92,46,0.5);}
+.hk-arrival-top{display:flex;align-items:center;gap:14px;margin-bottom:10px;}
+.hk-arrival-card .hk-room-num{color:#003580;}
+.hk-arrival-card.supplies-ok .hk-room-num{color:#1a5c2e;}
+.hk-arrival-tipo{font-size:12px;font-weight:700;color:#003580;text-transform:uppercase;letter-spacing:0.05em;}
+.hk-arrival-card.supplies-ok .hk-arrival-tipo{color:#1a5c2e;}
+.hk-arrival-guest{font-size:11px;color:#003580;font-weight:600;margin-top:1px;}
+.hk-arrival-status{font-size:11px;color:#666;margin-top:2px;}
+.hk-arrival-card.supplies-ok .hk-arrival-status{color:#1a5c2e;font-weight:700;}
+.hk-supplies{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;}
+.hk-supply-item{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.75);border-radius:10px;padding:9px 10px;cursor:pointer;border:1.5px solid rgba(0,0,0,0.1);transition:background 0.15s,border-color 0.15s;user-select:none;}
+.hk-supply-item.checked{background:rgba(26,92,46,0.18);border-color:#1a5c2e;}
+.hk-supply-check{width:20px;height:20px;border-radius:5px;border:2px solid #bbb;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;background:#fff;}
+.hk-supply-item.checked .hk-supply-check{background:#1a5c2e;border-color:#1a5c2e;}
+.hk-supply-label{font-size:12px;font-weight:600;color:#444;line-height:1.2;}
+.hk-supply-item.checked .hk-supply-label{color:#1a5c2e;}
+
 /* ═══ LOGIN HOUSEKEEPING BUTTON ═══ */
 .ls-hk{width:100%;padding:9px;background:linear-gradient(135deg,#1a5c2e,#2d9e5e);color:#fff;border:none;border-radius:var(--r);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:4px;}
 .ls-hk:hover{opacity:0.9;}
@@ -693,6 +712,7 @@ table.fin tfoot .td-monto{color:var(--mar);font-size:14px;}
       <div class="hk-section-title">✅ Limpias hoy</div>
       <div class="hk-room-list" id="hkCleanList"></div>
     </div>
+    <div class="hk-section" id="hkArrivalsSection" style="margin-top:14px;display:none;"></div>
   </div>
 </div>
 
@@ -1324,8 +1344,8 @@ function renderHK(){
   const reservas = [...getReservas(), ...getBookingReservas()];
   const TIPO_LABEL = {familiar:"Familiar 👨‍👩‍👧",triple:"Triple 🛏🛏🛏",matrimonial:"Matrimonial 💑",flex:"Flexible 🛏"};
 
-  // Check-ins de hoy
-  const checkinHoy = reservas.filter(r=>r.checkin===HOY).map(r=>r.roomNum);
+  // Check-ins de hoy (solo los que tienen habitación asignada)
+  const checkinHoy = reservas.filter(r=>r.checkin===HOY && r.roomNum).map(r=>r.roomNum);
 
   // Stats
   const totalHabs = ALL_ROOMS.length;
@@ -1383,6 +1403,17 @@ function renderHK(){
       </div>`;
     }).join("")}</div>`;
   }
+
+  // Arrivals today section
+  const arrivalsSection = document.getElementById("hkArrivalsSection");
+  const arrivalsData = reservas.filter(r=>r.checkin===HOY && r.roomNum);
+  if(arrivalsData.length === 0){
+    arrivalsSection.style.display = "none";
+  } else {
+    arrivalsSection.style.display = "block";
+    arrivalsSection.innerHTML = `<div class="hk-section-title">📅 Por llegar hoy (${arrivalsData.length})</div>
+    <div class="hk-room-list">${arrivalsData.map(r=>renderHKArrivalCard(r,HOY)).join("")}</div>`;
+  }
 }
 
 function hkMarcarLimpia(rn, btn){
@@ -1396,6 +1427,65 @@ function hkMarcarLimpia(rn, btn){
     card.style.transform="translateX(60px)";
     setTimeout(()=>renderHK(), 400);
   }
+}
+
+// ══════════════════════════════
+// HK ARRIVALS & SUPPLIES
+// ══════════════════════════════
+function getHKSupplies(date, roomNum){
+  const key = `hv_hk_sup_${date}_${roomNum}`;
+  try{ return JSON.parse(localStorage.getItem(key)||'{"toallas":false,"jabones":false,"confort":false}'); }
+  catch(e){ return {toallas:false,jabones:false,confort:false}; }
+}
+
+function toggleHKSupply(date, roomNum, supply){
+  const key = `hv_hk_sup_${date}_${roomNum}`;
+  const s = getHKSupplies(date, roomNum);
+  s[supply] = !s[supply];
+  localStorage.setItem(key, JSON.stringify(s));
+  sbSet(key, s); // Bug 2 fix: sync to Supabase
+  renderHK();
+}
+
+function renderHKArrivalCard(r, HOY){
+  const TIPO_LABEL = {familiar:"Familiar 👨‍👩‍👧",triple:"Triple 🛏🛏🛏",matrimonial:"Matrimonial 💑",flex:"Flexible 🛏"};
+  const tipo = ROOMS[r.roomNum]?ROOMS[r.roomNum].tipo:"flex";
+  const s = getHKSupplies(HOY, r.roomNum);
+  const allOk = s.toallas && s.jabones && s.confort;
+  // Bug 3 fix: detect if room is still dirty
+  const esSucia = getSucias().includes(r.roomNum);
+
+  function supplyBtn(supKey, emoji, label){
+    const checked = s[supKey];
+    // Bug 5 fix: no whitespace inside check div
+    const checkIcon = checked?`<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`:"";
+    return `<div class="hk-supply-item${checked?" checked":""}" onclick="toggleHKSupply('${HOY}',${r.roomNum},'${supKey}')"><div class="hk-supply-check">${checkIcon}</div><span class="hk-supply-label">${emoji} ${label}</span></div>`;
+  }
+
+  const dirtyWarning = esSucia
+    ? `<div style="background:rgba(220,38,38,0.12);border:1px solid rgba(220,38,38,0.3);border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;color:#b91c1c;margin-bottom:8px;">⚠️ Habitación pendiente de aseo — debe limpiarse antes de recibir</div>`
+    : "";
+
+  const statusMsg = esSucia
+    ? "🧹 Limpiar primero, luego confirmar insumos"
+    : allOk ? "✅ Habitación lista para recibir" : "🔲 Confirma los insumos antes de recibir";
+
+  return `<div class="hk-arrival-card${allOk&&!esSucia?" supplies-ok":""}" id="hkarr_${r.roomNum}">
+    <div class="hk-arrival-top">
+      <div class="hk-room-num">${r.roomNum}</div>
+      <div class="hk-room-info">
+        <div class="hk-arrival-tipo">${TIPO_LABEL[tipo]||tipo}</div>
+        ${r.nombre?`<div class="hk-arrival-guest">👤 ${r.nombre}</div>`:""}
+        <div class="hk-arrival-status">${statusMsg}</div>
+      </div>
+    </div>
+    ${dirtyWarning}
+    <div class="hk-supplies">
+      ${supplyBtn("toallas","🛁","Toallas")}
+      ${supplyBtn("jabones","🧴","Jabones")}
+      ${supplyBtn("confort","🧻","Confort")}
+    </div>
+  </div>`;
 }
 
 
