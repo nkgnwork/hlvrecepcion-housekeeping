@@ -26,6 +26,7 @@
 <meta name="twitter:description" content="Sistema interno de gestión hotelera · Putre, Altiplano chileno">
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ══════════════════════════════════════════════════════════════
 // SISTEMA DE NOTIFICACIONES
@@ -194,11 +195,11 @@ function importarCSV(input){
         if(yaIds.includes(id)) continue;
         yaIds.push(id);
         var tipo = detectarTipo(habitacion) || detectarTipo(nombre);
-        var roomNumFinal = esCancelada ? null : asignarHabBooking(ci, co, tipo, yaIds.slice());
+        var roomNumFinal = esCancelada ? null : asignarHabBooking(ci, co, tipo, yaIds.slice(), reservas);
         reservas.push({
           id:id, roomNum:roomNumFinal, checkin:ci, checkout:co,
           nombre:nombre||"Huésped Booking",
-          noches:parseInt(noches)||Math.round((new Date(co)-new Date(ci))/86400000),
+          noches:parseInt(noches)||Math.round((parseLocalDate(co)-parseLocalDate(ci))/86400000),
           pax:pax, tipo:tipo, fuente:"booking",
           precio:precio||"", telefono:telefono||"",
           numReserva:numRes||"", cancelada:esCancelada,
@@ -260,20 +261,23 @@ async function importarFotoCuaderno(input){
     var fotRes = parsed.reservas || [];
     if(!fotRes.length){ setBKStatus("No se encontraron reservas en la foto.","err"); input.value=""; return; }
     var yaIds2 = [];
+    var enProgreso2 = [];
     var reservas2 = fotRes.map(function(r,i){
       var ci2=r.checkin, co2=r.checkout;
       if(!ci2||!co2||ci2>=co2) return null;
       var tipo2 = detectarTipo(r.habitacion||"") || detectarTipo(r.nombre||"");
-      var rn2 = asignarHabBooking(ci2, co2, tipo2, yaIds2.slice());
+      var rn2 = asignarHabBooking(ci2, co2, tipo2, yaIds2.slice(), enProgreso2.slice());
       var id2 = "BK_FOTO_"+ci2+"_"+(r.nombre||i).slice(0,10).replace(/\s/g,"");
       yaIds2.push(id2);
-      return {id:id2, roomNum:rn2, checkin:ci2, checkout:co2, nombre:r.nombre||"Huésped Cuaderno",
-        noches:Math.round((new Date(co2)-new Date(ci2))/86400000),
+      var entry = {id:id2, roomNum:rn2, checkin:ci2, checkout:co2, nombre:r.nombre||"Huésped Cuaderno",
+        noches:Math.round((parseLocalDate(co2)-parseLocalDate(ci2))/86400000),
         pax:r.pax||null, tipo:tipo2, fuente:"booking",
         precio:r.precio_estimado?String(r.precio_estimado):"",
         telefono:r.telefono||"", numReserva:r.numReserva||"",
         pais:r.pais||"", notas:r.notas||"",
         docType:r.pais&&(r.pais.toLowerCase().includes("chile")||r.pais.toLowerCase()==="cl")?"boleta":"exento"};
+      enProgreso2.push(entry);
+      return entry;
     }).filter(Boolean);
     var exist2 = getBookingReservas();
     var existIds2 = exist2.map(function(r){ return r.id; });
@@ -302,11 +306,11 @@ function syncBookingINE(){
   var registros = getReg();
   // Incluir reservas con checkin pasado (ya alojadas o checkout pasado), excluyendo canceladas
   var alojadas = bkRes.filter(function(r){ return r.checkin <= HOY && !r.cancelada; });
-  if(!alojadas.length){ toast("No hay reservas de Booking con checkout pasado.","info"); return; }
+  if(!alojadas.length){ toast("No hay reservas de Booking con check-in pasado o en curso.","info"); return; }
   var yaEnINE = new Set(registros.map(function(r){ return r.bookingId; }).filter(Boolean));
   var nuevas = alojadas.filter(function(r){ return !yaEnINE.has(r.id); });
-  var faltanDatos = nuevas.filter(function(r){ return !r.pax || r.pax > 1; });
-  var completas  = nuevas.filter(function(r){ return r.pax === 1; });
+  var faltanDatos = nuevas.filter(function(r){ return !r.pax || !r.nombre || r.nombre === "Huésped Booking"; });
+  var completas  = nuevas.filter(function(r){ return r.pax && r.nombre && r.nombre !== "Huésped Booking"; });
   var integradas = 0;
   completas.forEach(function(r){
     _agregarReservaAINE(r, [{
@@ -322,9 +326,9 @@ function syncBookingINE(){
     var html = "<strong>\u26a0\ufe0f "+faltanDatos.length+" reserva"+(faltanDatos.length!==1?"s":"")+" requieren datos de pasajeros:</strong><br><br>";
     html += faltanDatos.map(function(r){
       var paxTotal = r.pax || "?";
-      var faltantes = typeof r.pax==="number" ? r.pax-1 : "?";
+      var faltantes = typeof r.pax==="number" ? Math.max(0, r.pax-1) : "?";
       return "<div style='display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:#fff;border-radius:6px;margin-bottom:5px;border:1px solid #ffc107;'>"
-        +"<span><strong>"+r.nombre+"</strong> \u00b7 "+r.checkin+" \u2192 "+r.checkout+" \u00b7 Hab."+(r.roomNum||"?")
+        +"<span><strong>"+r.nombre+"</strong> \u00b7 "+fmtFC(r.checkin)+" \u2192 "+fmtFC(r.checkout)+" \u00b7 Hab."+(r.roomNum||"?")
         +" \u00b7 <span style='color:#b45309;'>"+paxTotal+" pax (falta "+faltantes+")</span></span>"
         +"<button data-reserva-id='"+r.id+"' onclick=\"abrirModalPaxFaltantes('"+r.id+"')\" style='padding:4px 10px;background:#003580;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;'>Completar</button></div>";
     }).join("");
@@ -345,7 +349,7 @@ function syncBookingINE(){
 
 function _agregarReservaAINE(r, pasajeros){
   var registros = getReg();
-  var noches = Math.round((new Date(r.checkout)-new Date(r.checkin))/86400000);
+  var noches = Math.round((parseLocalDate(r.checkout)-parseLocalDate(r.checkin))/86400000);
   // Remove any existing INE entries for this booking to avoid duplicates
   if(r.id) registros = registros.filter(function(x){ return x.bookingId !== r.id; });
   pasajeros.forEach(function(p){
@@ -369,9 +373,9 @@ function abrirModalPaxFaltantes(reservaId){
   var r = bkRes.find(function(x){ return x.id===reservaId; });
   if(!r) return;
   _mpfReservaActual = r;
-  var paxTotal = r.pax || 2;
+  var paxTotal = r.pax || 1;
   document.getElementById("mpfTitulo").textContent = "Pasajeros de: "+r.nombre;
-  document.getElementById("mpfSubtitulo").textContent = r.checkin+" \u2192 "+r.checkout+" \u00b7 Hab. "+(r.roomNum||"?")+" \u00b7 "+paxTotal+" pax";
+  document.getElementById("mpfSubtitulo").textContent = fmtFC(r.checkin)+" \u2192 "+fmtFC(r.checkout)+" \u00b7 Hab. "+(r.roomNum||"?")+" \u00b7 "+paxTotal+" pax";
   var html = "";
   for(var i=0; i<paxTotal; i++){
     var color = i===0 ? "#003580" : "#f48c06";
@@ -535,7 +539,7 @@ function importarBackup(input){
       if(!backup.datos) throw new Error("Formato de backup inválido");
       showConfirm(
         "Restaurar backup",
-        "¿Restaurar el backup del " + (backup.fecha||"").slice(0,10) + "? Se reemplazarán TODOS los datos actuales.",
+        "¿Restaurar el backup del " + fmtFC((backup.fecha||"").slice(0,10)) + "? Se reemplazarán TODOS los datos actuales.",
         function(){
           if(backup.datos.reservas)         localStorage.setItem("hv_reservas",          JSON.stringify(backup.datos.reservas));
           if(backup.datos.booking)           localStorage.setItem("hv_booking",           JSON.stringify(backup.datos.booking));
@@ -543,7 +547,10 @@ function importarBackup(input){
           if(backup.datos.sucias)            localStorage.setItem("hv_sucias",            JSON.stringify(backup.datos.sucias));
           if(backup.datos.papelera)          localStorage.setItem("hv_papelera",          JSON.stringify(backup.datos.papelera));
           if(backup.datos.historialLimpieza) localStorage.setItem("hv_historial_limpieza",JSON.stringify(backup.datos.historialLimpieza));
-          if(backup.datos.limpiasHoy)        localStorage.setItem("hv_limpias_hoy",       JSON.stringify(backup.datos.limpiasHoy));
+          // Bug 18 fix: never restore hv_limpias_hoy from backup — it is date-scoped
+          // and restoring a stale date would immediately invalidate today's cleaning state.
+          // getLimpiasHoy() already returns [] when the stored date != today, so omitting
+          // the restore is equivalent to the user seeing an accurate empty cleaning slate.
           toast("Backup restaurado. Sincronizando y recargando...", "ok");
           setTimeout(function(){
             try{ pushLocalToSupabase(); }catch(e){}
@@ -619,7 +626,13 @@ function renderComparativaMeses(){
   var msNames = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
   meses.forEach(function(mes, i){
     var d = porMes[mes];
-    var prev = i>0 ? porMes[meses[i-1]] : null;
+    // Bug 15 fix: only compare against the immediately preceding CALENDAR month, not the
+    // previous entry in the data array (which could be 2+ months back if there are gaps).
+    var prevMesCalendario = (function(m){
+      var p=m.split("-"); var y=parseInt(p[0]),mo=parseInt(p[1])-1;
+      if(mo===0){mo=12;y--;} return y+"-"+String(mo).padStart(2,"0");
+    })(mes);
+    var prev = (i>0 && meses[i-1]===prevMesCalendario) ? porMes[meses[i-1]] : null;
     var varPct = prev && prev.ingresos>0 ? ((d.ingresos-prev.ingresos)/prev.ingresos*100) : null;
     var varHtml = varPct===null ? "—" 
       : (varPct>=0 ? '<span style="color:#0f6e56;">▲ '+varPct.toFixed(1)+'%</span>' 
@@ -726,11 +739,11 @@ function importarCuaderno(silencioso){
   }
 
   // Reclasificar según lógica de canal
-  const entradas = RESERVAS_CUADERNO.map(r=>({
-    ...r,
-    esBooking: esRealmenteBooking(r),
-    fuente:    esRealmenteBooking(r) ? "booking" : "directo"
-  }));
+  // Bug 22 fix: call esRealmenteBooking once per entry so esBooking and fuente are always consistent
+  const entradas = RESERVAS_CUADERNO.map(r=>{
+    const esB = esRealmenteBooking(r);
+    return {...r, esBooking: esB, fuente: esB ? "booking" : "directo"};
+  });
 
   const nuevasBooking  = entradas.filter(r=>  r.esBooking && !yaIds.has(r.id));
   const nuevasDirectas = entradas.filter(r=> !r.esBooking && !yaIds.has(r.id));
@@ -909,7 +922,6 @@ window.addEventListener("DOMContentLoaded", function(){
 });
 // ══════════════════════════════════════════════════════════════
 </script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -2028,6 +2040,7 @@ function doLogin(){
   const val = document.getElementById("claveInput").value;
   if(val === getClave()){
     esAdmin = true;
+    document.getElementById("loginErr").style.display = "none";
     document.title = "📋 Cotización — Hotel Las Vicuñas";
     iniciarApp(true);
   } else {
@@ -2405,8 +2418,8 @@ function doLogoutHK(){
   document.title = "Hotel Las Vicuñas — Recepción & Housekeeping";
   document.getElementById("hkApp").style.display = "none";
   document.getElementById("loginScreen").style.display = "flex";
-  document.getElementById("darkToggle").style.display = "";
-  document.getElementById("syncBadge").style.display = "";
+  document.getElementById("darkToggle").style.display = "none";
+  document.getElementById("syncBadge").style.display = "none";
 }
 
 function renderHK(){
@@ -2576,15 +2589,16 @@ function roomOccupied(rn,fi,fo){
   const todasRes=[...getReservas(),...getBookingReservas().filter(r=>!r.cancelada)];
   return todasRes.some(r=>r.roomNum===rn&&r.checkin<fo&&r.checkout>fi);
 }
-function asignarHab(tipoIdx,fi,fo){
+function asignarHab(tipoIdx,fi,fo,excludeRooms){
   if(!fi||!fo)return null;
+  const excl=excludeRooms||[];
   const tipo=HABS[tipoIdx].key;
   let cands=[];
   if(tipo==="familiar")cands=[102,103,202];
   else if(tipo==="triple")cands=[118,119,120,121];
   else if(tipo==="matrimonial")cands=[228];
   else cands=FLEX_PRI;
-  for(const r of cands){if(!roomOccupied(r,fi,fo))return r;}
+  for(const r of cands){if(!excl.includes(r)&&!roomOccupied(r,fi,fo))return r;}
   return null;
 }
 
@@ -2703,13 +2717,13 @@ function updateDateDisplay(){
 function calcN(){
   const{i,o}=gF();
   if(i&&o){
-    const d=(parseLocalDate(o)-parseLocalDate(i))/86400000;
+    const d=Math.round((parseLocalDate(o)-parseLocalDate(i))/86400000);
     if(d>0){noches=d;}
     else{noches=1;return;}
   }else{noches=1;}
   updateDateDisplay();
   renderIVAResumen();
-  if(i&&o&&i<o) items.forEach(it=>{it.roomNum=asignarHab(it.tipoIdx,i,o);});
+  if(i&&o&&i<o){ const assignedRooms=[]; items.forEach(it=>{ it.roomNum=asignarHab(it.tipoIdx,i,o,assignedRooms); if(it.roomNum) assignedRooms.push(it.roomNum); }); }
   rTodo();
 }
 
@@ -2728,9 +2742,9 @@ function setTab(t){
 // ══════════════════════════════
 // HABITACIONES UI
 // ══════════════════════════════
-function addHab(){const lastIdx=items.length>0?items[items.length-1].tipoIdx:1;items.push({tipoIdx:lastIdx,huespedes:1,roomNum:null});const{i,o}=gF();items[items.length-1].roomNum=asignarHab(lastIdx,i,o);rTodo();}
+function addHab(){const lastIdx=items.length>0?items[items.length-1].tipoIdx:1;items.push({tipoIdx:lastIdx,huespedes:HABS[lastIdx].capBase,roomNum:null});const{i,o}=gF();items[items.length-1].roomNum=asignarHab(lastIdx,i,o);rTodo();}
 function delHab(i){if(items.length===1)return;items.splice(i,1);rTodo();}
-function chTipo(i,v){items[i].tipoIdx=parseInt(v);const{i:fi,o}=gF();items[i].roomNum=asignarHab(items[i].tipoIdx,fi,o);rTodo();}
+function chTipo(i,v){items[i].tipoIdx=parseInt(v);const mx=capMax(items[i].tipoIdx);if(items[i].huespedes>mx)items[i].huespedes=mx;const{i:fi,o}=gF();items[i].roomNum=asignarHab(items[i].tipoIdx,fi,o);rTodo();}
 function chH(i,d){const mx=capMax(items[i].tipoIdx);items[i].huespedes=Math.max(1,Math.min(mx,items[i].huespedes+d));rTodo();}
 
 // ══════════════════════════════
@@ -2936,11 +2950,13 @@ function guardar(){
   let reservas=getReservas();
   let registros=getReg();
   const rid="R"+Date.now();
-  const dupRooms=pax.filter(h=>h.roomNum&&reservas.some(r=>r.roomNum===h.roomNum&&r.checkin===i&&r.checkout===o));
+  // Bug 20 fix: also check Booking reservas for collision, not only hv_reservas
+  const todasParaDup=[...reservas,...getBookingReservas().filter(r=>!r.cancelada)];
+  const dupRooms=pax.filter(h=>h.roomNum&&todasParaDup.some(r=>r.roomNum===h.roomNum&&r.checkin<o&&r.checkout>i));
   if(dupRooms.length) toast("⚠️ Hab. "+dupRooms.map(h=>h.roomNum).join(", ")+" ya tiene reserva en esas fechas","warn",5000);
   pax.forEach((h,hIdx)=>{
     if(h.roomNum){
-      reservas.push({id:rid+h.roomNum,roomNum:h.roomNum,tipoIdx:h.tipoIdx,checkin:i,checkout:o,nombre:gN()||h.pl.map(p=>p.nombre).filter(Boolean).join(", ")||"Huésped",noches,pax:h.pl.length,docType:docType||"boleta",nDocumento:getNDocumento(),telefono:getTelContacto()||"",medio:getMedio()||"",patente:getPatente()||"",precio:String(items[hIdx]?subtotalHab(items[hIdx]):subtotalHab({tipoIdx:h.tipoIdx,huespedes:h.pl.length}))});
+      reservas.push({id:rid+h.roomNum,roomNum:h.roomNum,tipoIdx:h.tipoIdx,checkin:i,checkout:o,nombre:gN()||h.pl.map(p=>p.nombre).filter(Boolean).join(", ")||"Huésped",noches,pax:items[hIdx]?items[hIdx].huespedes:h.pl.length,docType:docType||"boleta",nDocumento:getNDocumento(),telefono:getTelContacto()||"",medio:getMedio()||"",patente:getPatente()||"",precio:String(items[hIdx]?subtotalHab(items[hIdx]):subtotalHab({tipoIdx:h.tipoIdx,huespedes:h.pl.length}))});
     }
     if(h.roomNum) h.pl.forEach(p=>{
       if(p.nombre||p.doc){
@@ -3050,7 +3066,7 @@ function rDisp(){
   const bkRes=getBookingReservas();
   const todasRes=[...reservas,...bkRes];
   todasRes.forEach(r=>{
-    if(r.checkout===HOY && r.roomNum && !sucias.includes(r.roomNum)){
+    if(r.checkout===HOY && r.roomNum && !r.cancelada && !sucias.includes(r.roomNum)){
       marcarSucia(r.roomNum, false); // false = no redibujar aún
     }
   });
@@ -3272,9 +3288,9 @@ function marcarSucia(rn, redraw=true){
 }
 
 function marcarLimpia(rn, skipConfirm=false){
-  // Registrar en historial
-  registrarLimpiezaHistorial(rn);
   if(!skipConfirm){ showConfirm("Marcar limpia","Marcar hab. "+rn+" como limpia?",function(){ marcarLimpia(rn,true); }); return; }
+  // Registrar en historial solo cuando se confirma (evita doble registro)
+  registrarLimpiezaHistorial(rn);
   // Guardar en limpias-hoy para evitar re-agregar automáticamente
   const limpiasHoy=getLimpiasHoy();
   if(!limpiasHoy.includes(rn)){limpiasHoy.push(rn);saveLimpiasHoy(limpiasHoy);}
@@ -3339,10 +3355,11 @@ function detectarTipo(summary){
 }
 
 // Asignar habitación según tipo y disponibilidad
-function asignarHabBooking(ci, co, tipoKey, excluirIds){
+function asignarHabBooking(ci, co, tipoKey, excluirIds, enProgresoRes){
   const sistemaRes=getReservas();
   const bkRes=getBookingReservas().filter(r=>!excluirIds.includes(r.id)&&!r.cancelada);
-  const todas=[...sistemaRes,...bkRes];
+  // Bug 14 fix: include in-progress batch entries so same room isn't assigned twice
+  const todas=[...sistemaRes,...bkRes,...(enProgresoRes||[])];
   function ocupada(rn){ return todas.some(r=>r.roomNum===rn&&r.checkin<co&&r.checkout>ci); }
 
   if(tipoKey==="familiar"){
@@ -3385,13 +3402,13 @@ function parsearICS(text){
       const comment    =get("COMMENT");
       const uid        =get("UID")||("bk"+idx);
 
-      const noches=Math.round((new Date(co)-new Date(ci))/86400000);
+      const noches=Math.round((parseLocalDate(co)-parseLocalDate(ci))/86400000);
       const pax   =detectarPax(summary,description,comment);
       const tipo  =detectarTipo(summary);
 
       // Asignar habitación (pasamos ids ya procesados para evitar dobles)
       const yaIds=reservas.map(r=>r.id);
-      const roomNum=asignarHabBooking(ci,co,tipo,yaIds);
+      const roomNum=asignarHabBooking(ci,co,tipo,yaIds,reservas);
 
       // Try to extract phone and price from description/comment
       const descFull=(description+" "+(comment||"")).toLowerCase();
@@ -3512,6 +3529,10 @@ function editarBK(idx){
     if(!habVal) return;
     const habNum=parseInt(habVal);
     if(isNaN(habNum)||!ALL_ROOMS.includes(habNum)){ toast("Número de habitación inválido. Disponibles: "+ALL_ROOMS.join(", "),"warn"); return; }
+    // Bug 11 fix: check collision before assigning (excluding the entry being edited)
+    const todasSinEsta=[...getReservas(),...getBookingReservas().filter(x=>x.id!==rid&&!x.cancelada)];
+    const colision=todasSinEsta.some(x=>x.roomNum===habNum&&x.checkin<r.checkout&&x.checkout>r.checkin);
+    if(colision){ toast("⚠️ Hab. "+habNum+" ya tiene una reserva en esas fechas. Elige otra.","err",5000); return; }
     const latest=getBookingReservas();
     const i2=latest.findIndex(x=>x.id===rid);
     if(i2>=0){ latest[i2].roomNum=habNum; fbSaveBooking(latest); renderBKList(latest); rDisp(); toast("Hab. "+habNum+" asignada a "+r.nombre,"ok"); }
@@ -3525,17 +3546,31 @@ function setBKStatus(msg,tipo){
 }
 
 function limpiarBooking(){
-  const n = getBookingReservas().length;
+  const bkActuales = getBookingReservas();
+  const n = bkActuales.length;
   showConfirm(
     "Limpiar reservas Booking",
-    "¿Eliminar las " + n + " reservas de Booking? No se pueden recuperar desde la papelera.",
+    "¿Eliminar las " + n + " reservas de Booking? Se moverán a la papelera para poder recuperarlas.",
     function(){
+      // Bug 16 fix: move all booking entries to papelera before clearing, matching
+      // the same safety net as individual delBKReserva() calls.
+      if(bkActuales.length){
+        const papelera = getPapelera();
+        bkActuales.forEach(function(r){
+          const copia = Object.assign({}, r);
+          copia.deletedAt = new Date().toISOString();
+          copia._origenBooking = true;
+          papelera.unshift(copia);
+        });
+        savePapelera(papelera);
+      }
       fbClearBooking();
       setBKStatus("Reservas de Booking eliminadas.","");
       document.getElementById("bkClear").style.display="none";
       document.getElementById("bkList").style.display="none";
       rDisp();
-      toast("Reservas de Booking eliminadas", "ok");
+      updatePapeleraBadges();
+      toast("Reservas de Booking movidas a la papelera", "ok");
     },
     "Limpiar",
     true
@@ -3612,37 +3647,49 @@ function delReg(id){
       localStorage.setItem("hv_registros", JSON.stringify(updatedReg));
       sbSet("hv_registros", updatedReg);
 
-      // 2. Remove matching reserva from calendar (match by checkin+checkout+habitacion)
+      // 2. Remove matching reserva from calendar ONLY if no other INE records remain for it
       if(entry){
         const ci = entry.checkin;
         const co = entry.checkout;
         const habNum = entry.habitacion?.match(/\d+/)?.[0];
-        const toDelete = getReservas().filter(r=>{
+        // Check whether other passengers for this same reservation still exist after the delete
+        const otrosRegistros = updatedReg.filter(r=>{
           if(r.checkin===ci && r.checkout===co){
-            if(habNum && String(r.roomNum)===String(habNum)) return true;
+            if(habNum && entry.habitacion && r.habitacion && r.habitacion.match(/\d+/)?.[0]===habNum) return true;
             if(!habNum && r.nombre && entry.nombre && r.nombre.split(" ")[0]===entry.nombre.split(" ")[0]) return true;
           }
           return false;
         });
-        if(toDelete.length){
-          const papelera = getPapelera();
-          toDelete.forEach(r=>{ r.deletedAt=new Date().toISOString(); papelera.unshift(r); });
-          savePapelera(papelera);
-        }
-        const updatedRes = getReservas().filter(r=>{
-          if(r.checkin===ci && r.checkout===co){
-            if(habNum && String(r.roomNum)===String(habNum)) return false;
-            if(!habNum && r.nombre && entry.nombre && r.nombre.split(" ")[0]===entry.nombre.split(" ")[0]) return false;
+        // Only cascade-delete the calendar entry if no other INE records remain for this stay
+        if(otrosRegistros.length === 0){
+          const toDelete = getReservas().filter(r=>{
+            if(r.checkin===ci && r.checkout===co){
+              if(habNum && String(r.roomNum)===String(habNum)) return true;
+              if(!habNum && r.nombre && entry.nombre && r.nombre.split(" ")[0]===entry.nombre.split(" ")[0]) return true;
+            }
+            return false;
+          });
+          if(toDelete.length){
+            const papelera = getPapelera();
+            toDelete.forEach(r=>{ r.deletedAt=new Date().toISOString(); papelera.unshift(r); });
+            savePapelera(papelera);
           }
-          return true;
-        });
-        localStorage.setItem("hv_reservas", JSON.stringify(updatedRes));
-        sbSet("hv_reservas", updatedRes);
+          const updatedRes = getReservas().filter(r=>{
+            if(r.checkin===ci && r.checkout===co){
+              if(habNum && String(r.roomNum)===String(habNum)) return false;
+              if(!habNum && r.nombre && entry.nombre && r.nombre.split(" ")[0]===entry.nombre.split(" ")[0]) return false;
+            }
+            return true;
+          });
+          localStorage.setItem("hv_reservas", JSON.stringify(updatedRes));
+          sbSet("hv_reservas", updatedRes);
+        }
       }
 
       rTabla();
       try{ rDisp(); }catch(e){}
       try{ rFin(); }catch(e){}
+      try{ updatePapeleraBadges(); }catch(e){}
       toast("Registro eliminado", "ok");
     },
     "Eliminar",
@@ -3696,6 +3743,12 @@ function setFinTab(t){
   rFin();
 }
 
+// Bug 23 fix: authoritative night count always from date diff, never r.noches (can be stale)
+function nochesReales(r){
+  if(!r.checkin||!r.checkout) return r.noches||1;
+  const n=Math.round((parseLocalDate(r.checkout)-parseLocalDate(r.checkin))/86400000);
+  return n>0?n:(r.noches||1);
+}
 function getPrecioReserva(r){
   // Usar precioReal si existe (Booking.com lo trae del CSV/iCal)
   if(r.precioReal && r.precioReal > 0) return r.precioReal;
@@ -3704,14 +3757,14 @@ function getPrecioReserva(r){
     if(_p>0) return _p;
   }
   const h=HABS[r.tipoIdx]||HABS[1]; // default doble
-  return h.precio * (r.noches||1);
+  return h.precio * nochesReales(r);
 }
 
 function getAllReservas(){
   const sys=getReservas();
   const bk=getBookingReservas().map(r=>{
     const tipoMap={single:0,doble:1,matrimonial:2,triple:3,familiar:4};
-    const tipoIdx=r.tipo&&tipoMap[r.tipo]!==undefined?tipoMap[r.tipo]:r.tipoIdx||3;
+    const tipoIdx=r.tipo&&tipoMap[r.tipo]!==undefined?tipoMap[r.tipo]:(r.tipoIdx!=null?r.tipoIdx:1);
     const _pr=r.precio?parseFloat(String(r.precio).replace(/\./g,"").replace(/,/g,".").replace(/[^0-9.]/g,"")):NaN; const precioReal=isNaN(_pr)||_pr<=0?null:_pr;
     return {...r,tipoIdx,fuente:"booking",docType:r.docType||"exento",precioReal};
   });
@@ -3861,7 +3914,7 @@ function renderFinResumen(todas){
     for(let d=parseLocalDate(r.checkin);d<parseLocalDate(r.checkout);d.setDate(d.getDate()+1)){
       const mes=isoLocal(d).slice(0,7);
       if(!meses[mes]) meses[mes]={mes,boleta:0,factura:0,exento:0,total:0,habDias:0};
-      const pNoche=Math.round(getPrecioReserva(r)/(r.noches||1));
+      const pNoche=Math.round(getPrecioReserva(r)/nochesReales(r));
       const tipo=r.docType||"boleta";
       meses[mes][tipo]=(meses[mes][tipo]||0)+pNoche;
       meses[mes].total+=pNoche;
@@ -3882,7 +3935,7 @@ function renderFinResumen(todas){
         </tr></thead>
         <tbody>
         ${filasMes.map(f=>`<tr>
-          <td><strong>${new Date(f.mes+"-01").toLocaleDateString("es-CL",{year:"numeric",month:"long"})}</strong></td>
+          <td><strong>${new Date(f.mes+"-01T12:00:00").toLocaleDateString("es-CL",{year:"numeric",month:"long"})}</strong></td>
           <td class="td-ocup">${f.habDias}</td>
           <td class="td-neto">${f.boleta?fmt2(f.boleta):"—"}</td>
           <td class="td-neto">${f.factura?fmt2(f.factura):"—"}</td>
@@ -3906,14 +3959,21 @@ function renderFinResumen(todas){
 
 // ─── POR DÍA ────────────────────────────────────────────────
 function renderFinDia(todas){
-  const meses=[...new Set(todas.map(r=>r.checkin.slice(0,7)))].sort();
+  // Incluir todos los meses con actividad (check-in O noches de estadía)
+  const mesesSet=new Set();
+  todas.forEach(r=>{
+    for(let d=parseLocalDate(r.checkin);d<parseLocalDate(r.checkout);d.setDate(d.getDate()+1)){
+      mesesSet.add(isoLocal(d).slice(0,7));
+    }
+  });
+  const meses=[...mesesSet].sort();
   let mesActual=document.getElementById("finMesSel")?.value||meses[meses.length-1]||hoyISO().slice(0,7);
   if(!meses.includes(mesActual)) mesActual=meses[meses.length-1];
 
   document.getElementById("finSelector").innerHTML=`
     <label>Mes:</label>
     <select id="finMesSel" onchange="rFin()">
-      ${meses.map(m=>`<option value="${m}"${m===mesActual?" selected":""}>${new Date(m+"-01").toLocaleDateString("es-CL",{year:"numeric",month:"long"})}</option>`).join("")}
+      ${meses.map(m=>`<option value="${m}"${m===mesActual?" selected":""}>${new Date(m+"-01T12:00:00").toLocaleDateString("es-CL",{year:"numeric",month:"long"})}</option>`).join("")}
     </select>`;
 
   const [y,mo]=mesActual.split("-").map(Number);
@@ -3929,7 +3989,7 @@ function renderFinDia(todas){
     resDelDia.forEach(r=>{
       // Precio por noche = precio total / noches (refleja precioReal si existe)
       const totalRes = getPrecioReserva(r);
-      const nochesRes = r.noches||1;
+      const nochesRes = nochesReales(r);
       const p = Math.round(totalRes / nochesRes);
       bruto+=p;
       const tipo=r.docType||"boleta";
@@ -3964,9 +4024,9 @@ function renderFinDia(todas){
     ${topDias.map(f=>`<div class="fin-bar-row">
       <span class="fin-bar-lbl">${String(f.d).padStart(2,"0")}/${String(mo).padStart(2,"0")}</span>
       <div class="fin-bar-outer"><div class="fin-bar-stack" style="height:100%;border-radius:999px;overflow:hidden;">
-        <div class="fbs-boleta" style="width:${totalMes?Math.round(f.boleta/maxIng*100):0}%;height:100%;flex-shrink:0;"></div>
-        <div class="fbs-factura" style="width:${totalMes?Math.round(f.factura/maxIng*100):0}%;height:100%;flex-shrink:0;"></div>
-        <div class="fbs-exento" style="width:${totalMes?Math.round(f.exento/maxIng*100):0}%;height:100%;flex-shrink:0;"></div>
+        <div class="fbs-boleta" style="width:${f.bruto>0?Math.round(f.boleta/f.bruto*(Math.round(f.bruto/maxIng*100))):0}%;height:100%;flex-shrink:0;"></div>
+        <div class="fbs-factura" style="width:${f.bruto>0?Math.round(f.factura/f.bruto*(Math.round(f.bruto/maxIng*100))):0}%;height:100%;flex-shrink:0;"></div>
+        <div class="fbs-exento" style="width:${f.bruto>0?Math.round(f.bruto/maxIng*100)-Math.round(f.boleta/f.bruto*(Math.round(f.bruto/maxIng*100)))-Math.round(f.factura/f.bruto*(Math.round(f.bruto/maxIng*100))):0}%;height:100%;flex-shrink:0;"></div>
       </div></div>
       <span class="fin-bar-val">${fmt2(f.bruto)}</span>
     </div>`).join("")}`:"";
@@ -3999,7 +4059,7 @@ function renderFinSem(todas){
       const lun=new Date(d.getFullYear(),d.getMonth(),d.getDate()-(dow===0?6:dow-1));
       const semKey=isoLocal(lun);
       if(!semanas[semKey]) semanas[semKey]={inicio:semKey,habDias:0,boleta:0,factura:0,exento:0,total:0};
-      const pNoche=Math.round(getPrecioReserva(r)/(r.noches||1));
+      const pNoche=Math.round(getPrecioReserva(r)/nochesReales(r));
       const tipo=r.docType||"boleta";
       semanas[semKey][tipo]=(semanas[semKey][tipo]||0)+pNoche;
       semanas[semKey].total+=pNoche;
@@ -4055,7 +4115,7 @@ function renderFinMes(todas){
     for(let d=parseLocalDate(r.checkin);d<parseLocalDate(r.checkout);d.setDate(d.getDate()+1)){
       const mes=isoLocal(d).slice(0,7);
       if(!meses[mes]) meses[mes]={mes,habDias:0,boleta:0,factura:0,exento:0,total:0,nRes:new Set()};
-      const pNoche=Math.round(getPrecioReserva(r)/(r.noches||1));
+      const pNoche=Math.round(getPrecioReserva(r)/nochesReales(r));
       const tipo=r.docType||"boleta";
       meses[mes][tipo]=(meses[mes][tipo]||0)+pNoche;
       meses[mes].total+=pNoche;
@@ -4077,10 +4137,10 @@ function renderFinMes(todas){
     <div class="fin-kpi highlight"><div class="val">${fmt2(total)}</div><div class="lbl">Total acumulado</div></div>
     <div class="fin-kpi"><div class="val">${fmt2(totNeto)}</div><div class="lbl">Neto afecto IVA</div></div>
     <div class="fin-kpi"><div class="val">${fmt2(totAfecto-totNeto)}</div><div class="lbl">IVA a enterar</div></div>
-    <div class="fin-kpi"><div class="val">${mejorMes.mes?new Date(mejorMes.mes+"-01").toLocaleDateString("es-CL",{month:"short",year:"numeric"}):"—"}</div><div class="lbl">Mejor mes</div></div>`;
+    <div class="fin-kpi"><div class="val">${mejorMes.mes?new Date(mejorMes.mes+"-01T12:00:00").toLocaleDateString("es-CL",{month:"short",year:"numeric"}):"—"}</div><div class="lbl">Mejor mes</div></div>`;
 
   document.getElementById("finBars").innerHTML=filas.map(f=>{
-    const nm=new Date(f.mes+"-01").toLocaleDateString("es-CL",{month:"short",year:"2-digit"});
+    const nm=new Date(f.mes+"-01T12:00:00").toLocaleDateString("es-CL",{month:"short",year:"2-digit"});
     return `<div class="fin-bar-row">
       <span class="fin-bar-lbl" style="min-width:55px;">${nm}</span>
       <div class="fin-bar-outer"><div class="fin-bar-stack" style="height:100%;border-radius:999px;overflow:hidden;">
@@ -4094,7 +4154,7 @@ function renderFinMes(todas){
 
   document.getElementById("finThead").innerHTML=`<tr><th>Mes</th><th class="td-ocup">Hab-noches</th><th class="td-ocup">Reservas</th><th style="text-align:right"><span class="fin-badge boleta">Boleta</span></th><th style="text-align:right"><span class="fin-badge factura">Factura</span></th><th style="text-align:right"><span class="fin-badge exento">Exento</span></th><th class="td-monto">Total mes</th></tr>`;
   document.getElementById("finTbody").innerHTML=filas.map(f=>`<tr>
-    <td><strong>${new Date(f.mes+"-01").toLocaleDateString("es-CL",{year:"numeric",month:"long"})}</strong></td>
+    <td><strong>${new Date(f.mes+"-01T12:00:00").toLocaleDateString("es-CL",{year:"numeric",month:"long"})}</strong></td>
     <td class="td-ocup">${f.habDias}</td>
     <td class="td-ocup">${f.nRes.size}</td>
     <td class="td-neto">${f.boleta?fmt2(f.boleta):"—"}</td>
@@ -4127,7 +4187,7 @@ function onDatePartInput(fieldId){
 
   if(d&&m&&y&&y.length===4){
     const dd=parseInt(d),mm=parseInt(m),yy=parseInt(y);
-    if(dd>=1&&dd<=31&&mm>=1&&mm<=12&&yy>=2020){
+    const diasEnMes=new Date(yy,mm,0).getDate(); if(dd>=1&&dd<=diasEnMes&&mm>=1&&mm<=12&&yy>=2020){
       const iso=`${yy}-${String(mm).padStart(2,"0")}-${String(dd).padStart(2,"0")}`;
       hidden.value=iso;
       calcN();
@@ -4232,9 +4292,9 @@ function restaurarReserva(idx){
   if(!r) return;
   items.splice(idx,1);
   savePapelera(items);
-  delete r.deletedAt; delete r.eliminadoEn; delete r._origen;
-  // Restaurar al store correcto según origen
+  // Bug 17 fix: read esBooking BEFORE deleting flags, then clean all tombstone props
   const esBooking = r.fuente==="booking" || r._origenBooking;
+  delete r.deletedAt; delete r.eliminadoEn; delete r._origen; delete r._origenBooking;
   if(esBooking){
     const bkRes = getBookingReservas();
     if(!bkRes.find(x=>x.id===r.id)){
@@ -4436,6 +4496,7 @@ let _listenersSetup = false;
 function setupRealtimeListeners(){
   if(_listenersSetup) return;
   _listenersSetup = true;
+  if(sbChannel){ try{ sbClient.removeChannel(sbChannel); }catch(e){} sbChannel=null; }
 
   const callbacks = {
     "hv_sucias":      ()=>{ try{rDisp();}catch(e){} try{if(document.getElementById("hkApp").style.display!=="none") renderHK();}catch(e){} },
@@ -4460,6 +4521,9 @@ function setupRealtimeListeners(){
         if(cur !== inc){
           localStorage.setItem(key, inc);
           if(callbacks[key]) callbacks[key]();
+          else if(key.startsWith("hv_hk_sup_")){
+            try{ if(document.getElementById("hkApp").style.display!=="none") renderHK(); }catch(e){}
+          }
         }
       }
     )
@@ -4599,7 +4663,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE hotel_data;</code></div>
 
 <button id="darkToggle" onclick="toggleDark()" style="display:none;">🌙 Oscuro</button>
 <!-- SYNC BADGE -->
-<div id="syncBadge" class="off" title="Estado sync Supabase — toca para configurar" style="display:none;" onclick="sbConnected?toast('✅ Supabase conectado y sincronizando en tiempo real','ok',3000):showFbModal()" style="cursor:pointer;">
+<div id="syncBadge" class="off" title="Estado sync Supabase — toca para configurar" style="display:none; cursor:pointer;" onclick="sbConnected?toast('✅ Supabase conectado y sincronizando en tiempo real','ok',3000):showFbModal()">
   <div class="dot"></div>
   <span id="syncBadgeText">Sin sync</span>
 </div>
