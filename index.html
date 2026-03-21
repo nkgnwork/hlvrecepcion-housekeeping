@@ -922,17 +922,51 @@ window.addEventListener("DOMContentLoaded", function(){
 });
 // ══════════════════════════════════════════════════════════════
 </script>
+<!-- Premium Typography -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Playfair+Display:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --v:#1D9E75;--vo:#0F6E56;--vc:#E1F5EE;
-  --bg:#f5f0e8;--s:#fff;--s2:#f0ebe0;
-  --b:rgba(0,0,0,.10);--b2:rgba(0,0,0,.18);
-  --t:#2a1f0f;--t2:#6b5740;--t3:#a08060;
-  --mar:#5c3d1e;--mar2:#3d2510;--cam:#c8956c;
-  --r:10px;--rl:14px;
+  /* ── Altiplano Luxury Palette ── */
+  --bg:#F8F5F0;--s:#FFFFFF;--s2:#F2EBE0;--s3:#E8DFD2;
+  --b:rgba(92,61,30,.05);--b2:rgba(92,61,30,.10);--b3:rgba(92,61,30,.18);
+  --t:#1C1408;--t2:#5C4A36;--t3:#9A856C;
+  --gold:#C8956C;--gold2:#DDB888;--gold3:#B37D52;
+  --brown:#5C3D1E;--brown2:#3D2510;--brown3:#8B6542;
+  --r:12px;--rl:18px;
+  /* ── Backward compat aliases ── */
+  --mar:var(--brown);--mar2:var(--brown2);--cam:var(--gold);
+  --sh-xs:var(--el-1);--sh-sm:var(--el-2);--sh-md:var(--el-3);--sh-lg:var(--el-4);
+  /* ── Elevation System ── */
+  --el-1:0 1px 3px rgba(92,61,30,.04),0 1px 2px rgba(0,0,0,.02);
+  --el-2:0 3px 8px rgba(92,61,30,.06),0 1px 3px rgba(0,0,0,.03);
+  --el-3:0 8px 24px rgba(92,61,30,.08),0 4px 8px rgba(0,0,0,.04);
+  --el-4:0 16px 48px rgba(92,61,30,.12),0 8px 16px rgba(0,0,0,.05);
+  --el-glow:0 0 0 1px rgba(200,149,108,.12),0 4px 16px rgba(200,149,108,.08);
+  /* ── Typography ── */
+  --font-display:"Playfair Display",Georgia,"Times New Roman",serif;
+  --font-body:"DM Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-mono:"JetBrains Mono","SF Mono","Consolas",monospace;
 }
-body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--t);min-height:100vh;}
+body{
+  font-family:var(--font-body);
+  background:var(--bg);
+  color:var(--t);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  letter-spacing:-0.01em;
+}
+/* ── Ambient texture ── */
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 20% 0%,rgba(200,149,108,0.06) 0%,transparent 60%),
+    radial-gradient(ellipse at 80% 100%,rgba(92,61,30,0.04) 0%,transparent 50%);
+}
 
 /* ═══ LOGIN — Diseño cálido Altiplano ═══ */
 #loginScreen{
@@ -1071,92 +1105,231 @@ body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(
 
 /* ═══ APP ═══ */
 #app{display:none;}
-.hdr{background:linear-gradient(135deg,#2c1810,#5c3d1e);color:#fff;padding:11px 20px;display:flex;align-items:center;justify-content:space-between;}
-.hdr-l{display:flex;align-items:center;gap:10px;}
-.hdr-logo{height:34px;width:auto;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.3));}
-.hdr-info .nm{font-size:14px;font-weight:700;}
-.hdr-info .dr{font-size:10px;opacity:.6;margin-top:1px;}
-.hdr-r{display:flex;align-items:center;gap:7px;}
-.hdr-badge{font-size:10px;padding:3px 9px;border-radius:999px;font-weight:600;}
-.hdr-badge.admin{background:rgba(200,149,108,0.3);color:#f0c89a;border:1px solid rgba(200,149,108,0.4);}
-.hdr-badge.guest{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.2);}
-.logout{background:none;border:none;color:rgba(255,255,255,0.45);cursor:pointer;font-size:11px;font-family:inherit;padding:4px 7px;border-radius:5px;}
+
+/* ── Header ── */
+.hdr{
+  background:linear-gradient(135deg,#1a0f08 0%,#2c1810 30%,#4a2e1a 70%,#5c3d1e 100%);
+  color:#fff;padding:14px 22px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 4px 20px rgba(26,15,8,0.4);
+  position:relative;z-index:10;
+}
+.hdr::after{
+  content:"";position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(200,149,108,0.4),transparent);
+}
+.hdr-l{display:flex;align-items:center;gap:14px;}
+.hdr-logo{height:38px;width:auto;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));}
+.hdr-info .nm{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:0.01em;}
+.hdr-info .dr{font-size:10px;opacity:.45;margin-top:2px;letter-spacing:0.04em;font-weight:300;}
+.hdr-r{display:flex;align-items:center;gap:8px;}
+.hdr-badge{font-size:9px;padding:4px 12px;border-radius:999px;font-weight:600;letter-spacing:0.03em;text-transform:uppercase;}
+.hdr-badge.admin{background:linear-gradient(135deg,rgba(200,149,108,0.2),rgba(200,149,108,0.1));color:var(--gold2);border:1px solid rgba(200,149,108,0.25);backdrop-filter:blur(8px);}
+.hdr-badge.guest{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1);}
+.logout{background:none;border:none;color:rgba(255,255,255,0.35);cursor:pointer;font-size:11px;font-family:var(--font-body);padding:5px 10px;border-radius:8px;font-weight:500;transition:all .2s;}
 .logout:hover{color:#fff;background:rgba(255,255,255,0.1);}
 
-.nav{display:flex;background:var(--s);border-bottom:.5px solid var(--b2);overflow-x:auto;}
-.nb{flex:1;min-width:80px;padding:10px 4px;font-size:12px;border:none;cursor:pointer;background:transparent;color:var(--t2);font-family:inherit;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap;}
-.nb.on{color:var(--mar);border-bottom-color:var(--cam);font-weight:700;}
-.nb:disabled{color:var(--t3);cursor:not-allowed;opacity:0.5;}
-.nb.locked::after{content:" 🔒";font-size:9px;}
+/* ── Navigation — segment control ── */
+.nav{
+  display:flex;
+  background:var(--s);
+  padding:6px;gap:4px;
+  border-bottom:1px solid var(--b2);
+  box-shadow:var(--el-1);
+}
+.nb{
+  flex:1;min-width:0;padding:10px 8px;font-size:12px;
+  border:none;cursor:pointer;
+  background:transparent;color:var(--t3);
+  font-family:var(--font-body);font-weight:600;
+  border-radius:var(--r);white-space:nowrap;
+  transition:all .2s cubic-bezier(.4,0,.2,1);
+  letter-spacing:-0.01em;
+}
+.nb:hover{color:var(--t2);background:var(--s2);}
+.nb.on{
+  color:#fff;
+  background:linear-gradient(135deg,var(--brown),var(--brown3));
+  box-shadow:0 2px 8px rgba(92,61,30,.2);
+  font-weight:700;
+}
+.nb:disabled{color:var(--t3);cursor:not-allowed;opacity:0.35;}
+.nb.locked::after{content:" 🔒";font-size:8px;}
 
+/* ── Page & Cards ── */
 .pg{display:none;}.pg.on{display:block;}
-.wrap{max-width:900px;margin:0 auto;padding:14px 14px 50px;}
-.card{background:var(--s);border:.5px solid var(--b);border-radius:var(--rl);padding:14px 16px;margin-bottom:11px;}
-.ct{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;}
-.ig{display:flex;flex-wrap:wrap;gap:5px;}
-.ib{padding:5px 12px;border:.5px solid var(--b2);border-radius:999px;font-size:12px;cursor:pointer;background:transparent;color:var(--t2);font-family:inherit;}
-.ib:hover{background:var(--s2);}
-.ib.on{border:2px solid var(--cam);background:#fdf0e6;color:var(--mar);font-weight:700;}
-.inp{width:100%;padding:8px 10px;font-size:13px;border:.5px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);font-family:inherit;}
-.inp:focus{outline:none;border-color:var(--cam);}
-.fg2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.wrap{max-width:920px;margin:0 auto;padding:20px 18px 70px;}
+.card{
+  background:var(--s);
+  border:1px solid var(--b);
+  border-radius:var(--rl);
+  padding:18px 20px;margin-bottom:14px;
+  box-shadow:var(--el-2);
+  transition:box-shadow .25s cubic-bezier(.4,0,.2,1),transform .25s;
+  position:relative;
+}
+.card::before{
+  content:"";position:absolute;top:0;left:16px;right:16px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(200,149,108,0.15),transparent);
+}
+.ct{
+  font-size:9px;font-weight:700;color:var(--t3);
+  text-transform:uppercase;letter-spacing:.14em;margin-bottom:12px;
+  font-family:var(--font-body);
+}
+.ig{display:flex;flex-wrap:wrap;gap:6px;}
+.ib{
+  padding:7px 16px;border:1.5px solid var(--b2);
+  border-radius:999px;font-size:12px;cursor:pointer;
+  background:transparent;color:var(--t2);
+  font-family:var(--font-body);font-weight:500;
+  transition:all .2s;
+}
+.ib:hover{background:var(--s2);border-color:var(--gold);transform:translateY(-1px);}
+.ib.on{
+  border-color:var(--gold);
+  background:linear-gradient(135deg,rgba(200,149,108,0.12),rgba(221,184,136,0.08));
+  color:var(--brown);font-weight:700;
+  box-shadow:0 2px 8px rgba(200,149,108,0.15);
+}
+.inp{
+  width:100%;padding:10px 14px;font-size:13px;
+  border:1.5px solid var(--b2);border-radius:var(--r);
+  background:var(--s);color:var(--t);
+  font-family:var(--font-body);
+  transition:all .2s;
+}
+.inp:focus{outline:none;border-color:var(--gold);box-shadow:var(--el-glow);}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:380px){.fg2{grid-template-columns:1fr;}}
-.fg2 label{display:block;font-size:11px;color:var(--t2);margin-bottom:3px;}
-.fg2 input[type=date]{width:100%;padding:7px 10px;font-size:13px;border:.5px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);font-family:inherit;}
-.ni{font-size:12px;font-weight:600;margin-top:7px;min-height:15px;}
-.hl{display:flex;flex-direction:column;gap:7px;}
-.hi{border:.5px solid var(--b);border-radius:var(--r);padding:10px 12px;background:var(--s2);}
-.hh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
-.ht{font-size:13px;font-weight:700;}
-.db{background:none;border:none;cursor:pointer;font-size:11px;color:var(--t3);padding:3px 6px;border-radius:5px;font-family:inherit;}
+.fg2 label{display:block;font-size:10px;color:var(--t3);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+.fg2 input[type=date]{width:100%;padding:9px 12px;font-size:13px;border:1.5px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);font-family:var(--font-body);}
+
+/* ── Room items ── */
+.ni{font-size:12px;font-weight:600;margin-top:8px;min-height:15px;}
+.hl{display:flex;flex-direction:column;gap:10px;}
+.hi{
+  border:1px solid var(--b);border-radius:var(--rl);
+  padding:14px 16px;background:var(--s);
+  box-shadow:var(--el-1);transition:all .2s;
+}
+.hi:hover{box-shadow:var(--el-2);transform:translateY(-1px);}
+.hh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.ht{font-size:13px;font-weight:800;color:var(--t);font-family:var(--font-body);}
+.db{background:none;border:none;cursor:pointer;font-size:11px;color:var(--t3);padding:4px 8px;border-radius:8px;font-family:var(--font-body);font-weight:500;transition:all .15s;}
 .db:hover{background:#fee2e2;color:#b91c1c;}
-.cs{width:100%;padding:6px 9px;font-size:12px;border:.5px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);cursor:pointer;font-family:inherit;margin-bottom:6px;}
+.cs{width:100%;padding:8px 12px;font-size:12px;border:1.5px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);cursor:pointer;font-family:var(--font-body);margin-bottom:8px;}
 .hsr{display:flex;justify-content:space-between;align-items:center;}
-.cr{display:flex;align-items:center;gap:5px;}
-.bc{width:24px;height:24px;border:.5px solid var(--b2);border-radius:50%;background:var(--s);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--t);font-family:inherit;}
-.bc:hover{background:#fdf0e6;border-color:var(--cam);}
-.clbl{font-size:11px;color:var(--t2);}
-.cn{font-size:13px;font-weight:700;min-width:16px;text-align:center;}
-.hsb{font-size:11px;color:var(--t2);}.hsb span{font-weight:700;color:var(--t);}
-.ab{width:100%;padding:8px;border:1px dashed var(--b2);border-radius:var(--r);background:transparent;cursor:pointer;font-size:12px;color:var(--t2);margin-top:7px;font-family:inherit;}
-.ab:hover{background:var(--s2);}
-.atag{display:inline-block;background:#fdf0e6;color:var(--mar);border-radius:5px;padding:2px 8px;font-size:12px;font-weight:600;margin-top:4px;border:.5px solid var(--cam);}
-.awarn{color:#b45309;font-size:12px;margin-top:4px;}
-.rf{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-bottom:.5px solid var(--b);}
+.cr{display:flex;align-items:center;gap:7px;}
+.bc{
+  width:30px;height:30px;border:1.5px solid var(--b2);
+  border-radius:50%;background:var(--s);cursor:pointer;
+  font-size:16px;display:flex;align-items:center;justify-content:center;
+  color:var(--t);font-family:var(--font-body);font-weight:600;
+  transition:all .15s;
+}
+.bc:hover{background:rgba(200,149,108,0.1);border-color:var(--gold);box-shadow:0 2px 8px rgba(200,149,108,0.12);}
+.clbl{font-size:11px;color:var(--t2);font-weight:600;}
+.cn{font-size:15px;font-weight:800;min-width:20px;text-align:center;}
+.hsb{font-size:11px;color:var(--t3);font-weight:500;}.hsb span{font-weight:800;color:var(--t);}
+.ab{
+  width:100%;padding:10px;
+  border:2px dashed var(--b2);border-radius:var(--r);
+  background:transparent;cursor:pointer;font-size:12px;
+  color:var(--t3);margin-top:8px;font-family:var(--font-body);font-weight:600;
+  transition:all .2s;
+}
+.ab:hover{background:rgba(200,149,108,0.05);border-color:var(--gold);color:var(--brown);}
+.atag{
+  display:inline-flex;align-items:center;gap:4px;
+  background:linear-gradient(135deg,rgba(200,149,108,0.12),rgba(221,184,136,0.08));
+  color:var(--brown);border-radius:8px;padding:4px 12px;
+  font-size:11px;font-weight:700;margin-top:6px;
+  border:1px solid rgba(200,149,108,0.2);
+}
+.awarn{color:#b45309;font-size:11px;margin-top:6px;font-weight:600;}
+
+/* ── Summary rows ── */
+.rf{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--b);}
 .rf:last-child{border-bottom:none;}
-.rf.tot{padding-top:9px;border-top:1.5px solid var(--b2);border-bottom:none;}
-.rk{font-size:12px;color:var(--t2);}.rv{font-size:12px;font-weight:600;color:var(--t);}
-.rf.tot .rk{font-size:14px;font-weight:600;color:var(--t);}.rf.tot .rv{font-size:19px;font-weight:700;color:var(--mar);}
-.tabs{display:flex;border:.5px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:11px;}
-.tb{flex:1;padding:9px 5px;font-size:12px;border:none;cursor:pointer;background:transparent;color:var(--t2);font-family:inherit;font-weight:500;}
-.tb.on{background:var(--mar);color:#fff;font-weight:700;}
-.pi{border:.5px solid var(--b);border-radius:var(--r);padding:10px 12px;margin-bottom:7px;background:var(--s2);}
-.ptt{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;}
-.pg4{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px;}
-.pg4 input,.pg4 select{padding:6px 8px;font-size:12px;border:.5px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);font-family:inherit;width:100%;}
-.dii{width:100%;padding:6px 9px;font-size:12px;border:1px dashed var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);font-family:inherit;}
-.cb{background:var(--s);border:.5px solid var(--b);border-radius:var(--rl);padding:14px 16px;}
-.cx{font-size:12px;color:var(--t);line-height:1.6;white-space:pre-wrap;font-family:"Consolas","Courier New",monospace;background:var(--s2);border-radius:var(--r);padding:13px;border:.5px solid var(--b);max-height:min(400px,50vh);overflow-y:auto;}
-.cpbtn{margin-top:9px;width:100%;padding:9px;border:.5px solid var(--cam);border-radius:var(--r);background:transparent;cursor:pointer;font-size:13px;color:var(--mar);font-weight:600;font-family:inherit;}
-.cpbtn:hover{background:#fdf0e6;}.cpbtn.ok{background:var(--mar);color:#fff;}
-.gbtn{width:100%;margin-top:9px;padding:10px;background:linear-gradient(135deg,var(--mar),var(--cam));color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
-.gbtn:hover{opacity:0.9;}
+.rf.tot{padding-top:12px;border-top:2px solid var(--b3);border-bottom:none;margin-top:6px;}
+.rk{font-size:12px;color:var(--t3);font-weight:500;}.rv{font-size:12px;font-weight:700;color:var(--t);}
+.rf.tot .rk{font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--t);}
+.rf.tot .rv{font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--brown);}
+
+/* ── Tabs ── */
+.tabs{display:flex;border:1.5px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:14px;background:var(--s2);}
+.tb{flex:1;padding:11px 6px;font-size:12px;border:none;cursor:pointer;background:transparent;color:var(--t3);font-family:var(--font-body);font-weight:600;transition:all .2s;}
+.tb.on{background:linear-gradient(135deg,var(--brown),var(--gold3));color:#fff;font-weight:700;box-shadow:0 2px 8px rgba(92,61,30,0.15);}
+
+/* ── Passenger inputs ── */
+.pax-card{
+  border-radius:var(--r);padding:12px 14px;margin-bottom:10px;
+  background:var(--s);border:1px solid var(--b2);
+  box-shadow:var(--el-1);transition:box-shadow .2s;
+}
+.pax-card:hover{box-shadow:var(--el-2);}
+.pax-card:last-child{margin-bottom:4px;}
+.pax-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.pax-num{
+  width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:11px;font-weight:800;flex-shrink:0;
+  font-family:var(--font-body);
+}
+.pax-label{font-size:11px;font-weight:700;color:var(--t2);letter-spacing:0.02em;}
+.pi{border:1px solid var(--b);border-radius:var(--rl);padding:14px 16px;margin-bottom:10px;background:var(--s);box-shadow:var(--el-1);}
+.ptt{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;}
+.pg4{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px;}
+.pg4 input,.pg4 select{padding:8px 10px;font-size:12px;border:1.5px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);font-family:var(--font-body);width:100%;}
+.dii{width:100%;padding:8px 12px;font-size:12px;border:1.5px dashed var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);font-family:var(--font-body);}
+
+/* ── Message output ── */
+.cb{background:var(--s);border:1px solid var(--b);border-radius:var(--rl);padding:18px 20px;box-shadow:var(--el-2);}
+.cx{
+  font-size:12px;color:var(--t);line-height:1.7;
+  white-space:pre-wrap;
+  font-family:var(--font-mono);
+  background:linear-gradient(170deg,var(--s2) 0%,#EDE5D8 100%);
+  border-radius:var(--r);padding:16px;
+  border:1px solid var(--b2);
+  max-height:min(400px,50vh);overflow-y:auto;
+}
+.cpbtn{
+  margin-top:12px;width:100%;padding:11px;
+  border:1.5px solid var(--gold);border-radius:var(--r);
+  background:transparent;cursor:pointer;font-size:13px;
+  color:var(--brown);font-weight:700;
+  font-family:var(--font-body);transition:all .2s;
+}
+.cpbtn:hover{background:rgba(200,149,108,0.08);box-shadow:var(--el-glow);}
+.cpbtn.ok{background:var(--brown);color:#fff;border-color:var(--brown);}
+.gbtn{
+  width:100%;margin-top:12px;padding:12px;
+  background:linear-gradient(135deg,var(--brown),var(--gold3),var(--gold));
+  color:#fff;border:none;border-radius:var(--r);
+  font-size:13px;font-weight:800;cursor:pointer;
+  font-family:var(--font-body);
+  box-shadow:0 4px 16px rgba(92,61,30,0.25);
+  transition:all .2s;letter-spacing:0.02em;
+}
+.gbtn:hover{box-shadow:0 8px 24px rgba(92,61,30,0.3);transform:translateY(-2px);}
 
 /* DISPONIBILIDAD */
-.disp-nav{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
-.disp-nav h3{font-size:14px;font-weight:700;flex:1;color:var(--mar);}
-.disp-nav button{padding:6px 12px;border:.5px solid var(--b2);border-radius:var(--r);background:var(--s);cursor:pointer;font-size:12px;font-family:inherit;color:var(--t2);}
-.disp-nav button:hover{background:var(--s2);}
-.disp-nav button.on{background:var(--mar);color:#fff;border-color:var(--mar);font-weight:600;}
-.leyenda{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:11px;align-items:center;}
-.ley-i{display:flex;align-items:center;gap:4px;}
-.ley-d{width:12px;height:12px;border-radius:3px;}
-.tabla-disp{overflow-x:auto;border-radius:var(--r);border:.5px solid var(--b2);}
+.disp-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.disp-nav h3{font-size:15px;font-weight:800;flex:1;color:var(--mar);letter-spacing:-0.02em;}
+.disp-nav button{padding:7px 14px;border:1.5px solid var(--b2);border-radius:var(--r);background:var(--s);cursor:pointer;font-size:12px;font-family:inherit;color:var(--t2);font-weight:600;transition:all .15s;box-shadow:var(--sh-xs);}
+.disp-nav button:hover{background:var(--s2);border-color:var(--cam);}
+.disp-nav button.on{background:linear-gradient(135deg,var(--mar),var(--cam));color:#fff;border-color:transparent;font-weight:700;box-shadow:0 2px 8px rgba(92,61,30,0.2);}
+.leyenda{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:11px;align-items:center;}
+.ley-i{display:flex;align-items:center;gap:4px;font-weight:500;}
+.ley-d{width:13px;height:13px;border-radius:4px;box-shadow:var(--sh-xs);}
+.tabla-disp{overflow-x:auto;border-radius:var(--rl);border:1px solid var(--b2);box-shadow:var(--sh-sm);}
 table.disp{border-collapse:collapse;font-size:11px;min-width:600px;width:100%;}
-table.disp th{background:#f5ede0;padding:7px 5px;text-align:center;border:.5px solid var(--b2);font-size:10px;font-weight:700;color:var(--t2);white-space:nowrap;}
-table.disp th.hab-th{text-align:left;padding-left:8px;min-width:90px;}
+table.disp th{background:linear-gradient(180deg,#f8f0e2,#f0e6d4);padding:8px 5px;text-align:center;border:.5px solid var(--b2);font-size:10px;font-weight:700;color:var(--t2);white-space:nowrap;}
+table.disp th.hab-th{text-align:left;padding-left:10px;min-width:95px;}
 table.disp td{padding:5px 4px;border:.5px solid var(--b);text-align:center;vertical-align:middle;min-width:36px;}
-table.disp td.hab-cell{text-align:left;padding-left:8px;background:#f5ede0;font-weight:600;font-size:11px;white-space:nowrap;}
+table.disp td.hab-cell{text-align:left;padding-left:10px;background:linear-gradient(180deg,#f8f0e2,#f0e6d4);font-weight:700;font-size:11px;white-space:nowrap;}
 .cel-l{background:#fffdf9;}
 .cel-o{color:#fff;font-size:9px;font-weight:600;padding:2px;line-height:1.2;cursor:pointer;}
 .cel-ini{border-radius:4px 0 0 4px;}
@@ -1181,14 +1354,16 @@ table.disp td.hab-cell{text-align:left;padding-left:8px;background:#f5ede0;font-
 
 /* PROYECCIÓN FINANCIERA */
 .fin-tabs{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;}
-.fin-tab{padding:7px 16px;border:.5px solid var(--b2);border-radius:999px;font-size:12px;cursor:pointer;background:transparent;color:var(--t2);font-family:inherit;font-weight:500;}
-.fin-tab.on{background:var(--mar);color:#fff;border-color:var(--mar);font-weight:700;}
-.fin-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px;}
-.fin-kpi{background:var(--s);border:.5px solid var(--b);border-radius:var(--rl);padding:14px 16px;text-align:center;}
-.fin-kpi .val{font-size:20px;font-weight:700;color:var(--mar);margin-bottom:2px;}
-.fin-kpi .lbl{font-size:11px;color:var(--t2);}
-.fin-kpi.highlight{background:linear-gradient(135deg,var(--mar),var(--cam));border:none;}
-.fin-kpi.highlight .val{color:#fff;font-size:22px;}
+.fin-tab{padding:8px 18px;border:1.5px solid var(--b2);border-radius:999px;font-size:12px;cursor:pointer;background:transparent;color:var(--t2);font-family:inherit;font-weight:600;transition:all .15s;box-shadow:var(--sh-xs);}
+.fin-tab:hover{border-color:var(--cam);background:var(--s2);}
+.fin-tab.on{background:linear-gradient(135deg,var(--mar),var(--cam));color:#fff;border-color:transparent;font-weight:700;box-shadow:0 2px 8px rgba(92,61,30,0.2);}
+.fin-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;}
+.fin-kpi{background:var(--s);border:1px solid var(--b);border-radius:var(--rl);padding:16px 16px;text-align:center;box-shadow:var(--sh-sm);transition:all .2s;}
+.fin-kpi:hover{box-shadow:var(--sh-md);transform:translateY(-2px);}
+.fin-kpi .val{font-size:22px;font-weight:900;color:var(--mar);margin-bottom:3px;letter-spacing:-0.02em;}
+.fin-kpi .lbl{font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+.fin-kpi.highlight{background:linear-gradient(135deg,var(--mar),#8B5E3C,var(--cam));border:none;box-shadow:0 4px 16px rgba(92,61,30,0.25);}
+.fin-kpi.highlight .val{color:#fff;font-size:24px;}
 .fin-kpi.highlight .lbl{color:rgba(255,255,255,0.8);}
 .fin-tabla-wrap{overflow-x:auto;border-radius:var(--r);border:.5px solid var(--b2);margin-bottom:14px;}
 table.fin{width:100%;border-collapse:collapse;font-size:12px;min-width:500px;}
@@ -1213,15 +1388,15 @@ table.fin tfoot .td-monto{color:var(--mar);font-size:14px;}
 .fin-selector{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
 .fin-selector label{font-size:12px;color:var(--t2);}
 .fin-selector select,.fin-selector input{padding:6px 10px;font-size:12px;border:.5px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);font-family:inherit;}
-.bk-box{background:#f0f6ff;border:1px dashed #003580;border-radius:var(--r);padding:13px 15px;margin-bottom:12px;}
+.bk-box{background:linear-gradient(135deg,#f0f6ff,#e8f0fb);border:1.5px solid rgba(0,53,128,0.15);border-radius:var(--rl);padding:14px 16px;margin-bottom:14px;box-shadow:var(--sh-sm);}
 .bk-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .bk-logo{font-size:13px;font-weight:900;color:#003580;letter-spacing:-0.5px;white-space:nowrap;}
-.bk-lbl{display:flex;align-items:center;gap:6px;padding:7px 14px;background:#003580;color:#fff;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
-.bk-lbl:hover{background:#00224f;}
+.bk-lbl{display:flex;align-items:center;gap:6px;padding:7px 14px;background:linear-gradient(135deg,#003580,#0052cc);color:#fff;border-radius:var(--r);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 2px 6px rgba(0,53,128,0.2);transition:all .15s;}
+.bk-lbl:hover{background:linear-gradient(135deg,#00224f,#003580);box-shadow:0 4px 10px rgba(0,53,128,0.3);}
 .bk-inp{display:none;}
-.bk-status{font-size:12px;color:var(--t2);flex:1;min-width:160px;}
-.bk-status.ok{color:#0F6E56;font-weight:600;}
-.bk-status.err{color:#b91c1c;font-weight:600;}
+.bk-status{font-size:12px;color:var(--t2);flex:1;min-width:160px;font-weight:500;}
+.bk-status.ok{color:#0F6E56;font-weight:700;}
+.bk-status.err{color:#b91c1c;font-weight:700;}
 .bk-clear{padding:5px 11px;background:transparent;border:.5px solid #b91c1c;color:#b91c1c;border-radius:var(--r);font-size:12px;cursor:pointer;font-family:inherit;}
 .bk-clear:hover{background:#fee2e2;}
 .bk-list{margin-top:10px;display:none;}
@@ -1235,38 +1410,41 @@ table.fin tfoot .td-monto{color:var(--mar);font-size:14px;}
 .bk-edit-btn:hover{background:#e0f0ff;}
 
 /* REGISTRO */
-.rh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:7px;}
-.rh h2{font-size:15px;font-weight:700;color:var(--mar);}
-.bexp{padding:7px 14px;background:#185FA5;color:#fff;border:none;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
-.bdng{padding:7px 12px;background:transparent;color:#b91c1c;border:.5px solid #b91c1c;border-radius:var(--r);font-size:12px;cursor:pointer;font-family:inherit;}
-.bdng:hover{background:#fee2e2;}
-.fr{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;}
-.fr input,.fr select{padding:6px 9px;font-size:12px;border:.5px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);font-family:inherit;}
-.tw{overflow-x:auto;border-radius:var(--r);border:.5px solid var(--b2);}
+.rh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.rh h2{font-size:16px;font-weight:800;color:var(--mar);letter-spacing:-0.02em;}
+.bexp{padding:7px 14px;background:linear-gradient(135deg,#185FA5,#2070c0);color:#fff;border:none;border-radius:var(--r);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 6px rgba(24,95,165,0.2);transition:all .15s;}
+.bexp:hover{box-shadow:0 4px 10px rgba(24,95,165,0.3);transform:translateY(-1px);}
+.bdng{padding:7px 12px;background:transparent;color:#b91c1c;border:1.5px solid #fca5a5;border-radius:var(--r);font-size:12px;cursor:pointer;font-family:inherit;font-weight:600;transition:all .15s;}
+.bdng:hover{background:#fee2e2;border-color:#dc2626;}
+.fr{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.fr input,.fr select{padding:7px 10px;font-size:12px;border:1.5px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);font-family:inherit;transition:border-color .15s;}
+.fr input:focus,.fr select:focus{border-color:var(--cam);outline:none;}
+.tw{overflow-x:auto;border-radius:var(--rl);border:1px solid var(--b2);box-shadow:var(--sh-sm);}
 table.reg{width:100%;border-collapse:collapse;font-size:11.5px;min-width:650px;}
-table.reg thead{background:#f5ede0;}
-table.reg th{padding:8px 9px;text-align:left;font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;border-bottom:.5px solid var(--b2);white-space:nowrap;}
-table.reg td{padding:7px 9px;border-bottom:.5px solid var(--b);}
+table.reg thead{background:linear-gradient(180deg,#f8f0e2,#f0e6d4);}
+table.reg th{padding:9px 10px;text-align:left;font-size:10px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--b2);white-space:nowrap;}
+table.reg td{padding:8px 10px;border-bottom:1px solid var(--b);}
 table.reg tr:last-child td{border-bottom:none;}
-table.reg tr:hover td{background:var(--s2);}
-.bdg{display:inline-block;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:600;}
+table.reg tr:hover td{background:rgba(200,149,108,0.06);}
+.bdg{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;}
 .bdg-cl{background:#E1F5EE;color:#0F6E56;}
 .bdg-ext{background:#E6F1FB;color:#185FA5;}
-.dr2{background:none;border:none;cursor:pointer;color:var(--t3);font-size:13px;padding:2px 5px;border-radius:3px;}
+.dr2{background:none;border:none;cursor:pointer;color:var(--t3);font-size:13px;padding:3px 6px;border-radius:5px;transition:all .15s;}
 .dr2:hover{background:#fee2e2;color:#b91c1c;}
-.es{text-align:center;padding:35px 16px;color:var(--t3);font-size:13px;}
-.sr{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:9px;margin-bottom:12px;}
-.sc{background:var(--s);border:.5px solid var(--b);border-radius:var(--r);padding:10px 12px;text-align:center;}
-.sn{font-size:20px;font-weight:700;color:var(--mar);}
-.sl{font-size:10px;color:var(--t2);margin-top:1px;}
+.es{text-align:center;padding:40px 16px;color:var(--t3);font-size:13px;}
+.sr{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px;}
+.sc{background:var(--s);border:1px solid var(--b);border-radius:var(--rl);padding:14px 12px;text-align:center;box-shadow:var(--sh-sm);transition:box-shadow .2s,transform .2s;}
+.sc:hover{box-shadow:var(--sh-md);transform:translateY(-2px);}
+.sn{font-size:22px;font-weight:900;color:var(--mar);letter-spacing:-0.02em;}
+.sl{font-size:10px;color:var(--t3);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
 
 /* ONLY-DISP (vista invitado) */
-.guest-banner{background:linear-gradient(135deg,#3d2510,#5c3d1e);color:#f0c89a;padding:8px 16px;font-size:12px;text-align:center;letter-spacing:0.3px;}
+.guest-banner{background:linear-gradient(135deg,#2a1a0f,#5c3d1e);color:#e8c89a;padding:10px 16px;font-size:12px;text-align:center;letter-spacing:0.02em;font-weight:500;border-bottom:1px solid rgba(200,149,108,0.2);}
 
 @media(max-width:560px){
-  .wrap{padding:10px 10px 40px;}
+  .wrap{padding:12px 10px 50px;}
   .fg2,.pg4{grid-template-columns:1fr;}
-  .hdr{padding:10px 13px;}
+  .hdr{padding:10px 14px;}
   .sr{grid-template-columns:1fr 1fr;}
   .ls-box{padding:28px 20px 22px;}
 }
@@ -1372,28 +1550,30 @@ table.reg tr:hover td{background:var(--s2);}
 .iva-row.total-iva .iv{font-weight:800;color:var(--mar);font-size:14px;}
 
 /* ═══ PROYECCIÓN FINANCIERA REDISEÑADA ═══ */
-.fin-resumen-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.fin-resumen-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
 @media(max-width:500px){.fin-resumen-grid{grid-template-columns:1fr;}}
-.fin-doc-card{background:var(--s);border:.5px solid var(--b);border-radius:var(--rl);padding:14px 16px;}
-.fin-doc-card .fdc-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.fin-doc-card .fdc-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
-.fin-doc-card .fdc-titulo{font-size:12px;font-weight:700;color:var(--t);}
-.fin-doc-card .fdc-sub{font-size:10px;color:var(--t2);}
+.fin-doc-card{background:var(--s);border:1px solid var(--b);border-radius:var(--rl);padding:16px 18px;box-shadow:var(--sh-sm);transition:box-shadow .2s,transform .2s;}
+.fin-doc-card:hover{box-shadow:var(--sh-md);transform:translateY(-1px);}
+.fin-doc-card .fdc-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.fin-doc-card .fdc-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;box-shadow:var(--sh-xs);}
+.fin-doc-card .fdc-titulo{font-size:13px;font-weight:800;color:var(--t);letter-spacing:-0.01em;}
+.fin-doc-card .fdc-sub{font-size:10px;color:var(--t3);font-weight:500;margin-top:1px;}
 .fin-doc-card.boleta .fdc-icon{background:#e8f5ee;}
 .fin-doc-card.factura .fdc-icon{background:#e0eeff;}
 .fin-doc-card.exento .fdc-icon{background:#ede9fe;}
-.fin-doc-card.total-card{grid-column:1/-1;background:linear-gradient(135deg,var(--mar),var(--cam));border:none;}
+.fin-doc-card.total-card{grid-column:1/-1;background:linear-gradient(135deg,var(--mar),#8B5E3C,var(--cam));border:none;box-shadow:0 8px 24px rgba(92,61,30,0.2);}
+.fin-doc-card.total-card:hover{box-shadow:0 12px 32px rgba(92,61,30,0.3);}
 .fin-doc-card.total-card .fdc-titulo,.fin-doc-card.total-card .fdc-val,.fin-doc-card.total-card .fdc-sub{color:#fff;}
-.fdc-val{font-size:20px;font-weight:800;color:var(--mar);margin-bottom:2px;}
-.fin-doc-card.total-card .fdc-val{font-size:24px;color:#fff;}
-.fdc-rows{margin-top:6px;border-top:.5px solid rgba(0,0,0,0.08);padding-top:6px;}
-.fdc-row{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;}
-.fdc-row .fdr-k{color:var(--t2);}
-.fdc-row .fdr-v{font-weight:600;color:var(--t);}
-.fin-doc-card.total-card .fdc-rows{border-top-color:rgba(255,255,255,0.25);}
-.fin-doc-card.total-card .fdr-k{color:rgba(255,255,255,0.8);}
+.fdc-val{font-size:22px;font-weight:900;color:var(--mar);margin-bottom:2px;letter-spacing:-0.02em;}
+.fin-doc-card.total-card .fdc-val{font-size:26px;color:#fff;}
+.fdc-rows{margin-top:8px;border-top:1px solid rgba(0,0,0,0.06);padding-top:8px;}
+.fdc-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;}
+.fdc-row .fdr-k{color:var(--t3);font-weight:500;}
+.fdc-row .fdr-v{font-weight:700;color:var(--t);}
+.fin-doc-card.total-card .fdc-rows{border-top-color:rgba(255,255,255,0.2);}
+.fin-doc-card.total-card .fdr-k{color:rgba(255,255,255,0.75);}
 .fin-doc-card.total-card .fdr-v{color:#fff;}
-.fin-bar-stack{display:flex;height:12px;border-radius:999px;overflow:hidden;margin:6px 0 4px;background:var(--s2);}
+.fin-bar-stack{display:flex;height:14px;border-radius:999px;overflow:hidden;margin:6px 0 4px;background:var(--s2);box-shadow:inset 0 1px 2px rgba(0,0,0,0.06);}
 .fbs-boleta{background:#1a5c2e;}
 .fbs-factura{background:#003580;}
 .fbs-exento{background:#7c3aed;}
@@ -1454,44 +1634,43 @@ table.fin tfoot .td-monto{color:var(--mar);font-size:14px;}
 
 
 /* ═══ FECHA DD/MM/AAAA ═══ */
-.date-cl-wrap{display:flex;align-items:center;gap:2px;background:var(--s);border:.5px solid var(--b2);border-radius:var(--r);padding:4px 8px;transition:border-color 0.2s;}
-.date-cl-wrap:focus-within{border-color:var(--cam);box-shadow:0 0 0 2px rgba(200,149,108,0.15);}
-.date-cl-part{border:none;background:transparent;font-size:14px;font-family:inherit;color:var(--t);text-align:center;outline:none;-moz-appearance:textfield;width:28px;padding:3px 0;}
+.date-cl-wrap{display:flex;align-items:center;gap:3px;background:var(--s);border:1.5px solid var(--b2);border-radius:var(--r);padding:5px 10px;transition:border-color 0.2s,box-shadow .2s;}
+.date-cl-wrap:focus-within{border-color:var(--cam);box-shadow:0 0 0 3px rgba(200,149,108,0.12);}
+.date-cl-part{border:none;background:transparent;font-size:15px;font-family:inherit;color:var(--t);text-align:center;outline:none;-moz-appearance:textfield;width:30px;padding:3px 0;font-weight:600;}
 .date-cl-part::-webkit-outer-spin-button,.date-cl-part::-webkit-inner-spin-button{-webkit-appearance:none;}
-.date-cl-year{width:48px;}
-.date-cl-sep{color:var(--t3);font-weight:700;font-size:14px;user-select:none;}
-.date-cl-part::placeholder{color:var(--t3);font-size:11px;}
+.date-cl-year{width:50px;}
+.date-cl-sep{color:var(--t3);font-weight:800;font-size:14px;user-select:none;}
+.date-cl-part::placeholder{color:var(--t3);font-size:11px;font-weight:400;}
 
 
-/* ═══ PAPELERA ═══ */
-.papelera-btn{position:relative;padding:6px 12px;background:transparent;color:#b91c1c;border:1.5px solid #fca5a5;border-radius:var(--r);font-size:12px;cursor:pointer;font-family:inherit;font-weight:600;transition:background 0.15s;}
-.papelera-btn:hover{background:#fee2e2;}
-.papelera-badge{position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:999px;font-size:9px;font-weight:800;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 3px;}
-.papelera-modal{position:fixed;inset:0;z-index:99997;background:rgba(0,0,0,0.6);display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;}
-.papelera-box{background:#fff;border-radius:16px;width:100%;max-width:560px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,0.4);overflow:hidden;}
-.papelera-hdr{background:#dc2626;color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
-.papelera-hdr h3{font-size:15px;font-weight:800;margin:0;}
-.papelera-hdr .ph-sub{font-size:11px;opacity:0.8;margin-top:2px;}
-.papelera-body{padding:16px;max-height:60vh;overflow-y:auto;}
-.papelera-item{background:#fff5f5;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
-.papelera-item:last-child{margin-bottom:0;}
-.pi-num{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0;}
-.pi-info{flex:1;min-width:0;}
-.pi-nombre{font-size:13px;font-weight:700;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pi-fechas{font-size:11px;color:#666;margin-top:2px;}
-.pi-doc{font-size:10px;color:#888;margin-top:1px;}
-.pi-actions{display:flex;gap:6px;flex-shrink:0;}
-.pi-restore{padding:6px 10px;background:#1a5c2e;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;}
-.pi-restore:hover{opacity:0.85;}
-.pi-del-perm{padding:6px 8px;background:transparent;color:#dc2626;border:1px solid #fca5a5;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit;}
-.pi-del-perm:hover{background:#fee2e2;}
-.papelera-footer{padding:12px 16px;border-top:1px solid #fee2e2;display:flex;gap:8px;justify-content:space-between;align-items:center;background:#fff;}
-.papelera-empty{text-align:center;padding:32px;color:#999;}
-.papelera-empty-ico{font-size:36px;margin-bottom:8px;}
-.papelera-vaciar{padding:8px 14px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
-.papelera-vaciar:hover{opacity:0.85;}
-.papelera-cerrar{padding:8px 14px;background:transparent;color:#666;border:1px solid #ddd;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;}
-
+/* ═══ QUICK WHATSAPP RESPONSES ═══ */
+.qr-section{margin-bottom:12px;}
+.qr-toggle{width:100%;padding:14px 18px;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:var(--rl);cursor:pointer;font-family:inherit;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:space-between;transition:all .15s;box-shadow:0 3px 10px rgba(18,140,126,0.25);letter-spacing:0.01em;}
+.qr-toggle:hover{opacity:0.92;box-shadow:0 5px 14px rgba(18,140,126,0.35);transform:translateY(-1px);}
+.qr-toggle-left{display:flex;align-items:center;gap:8px;}
+.qr-arrow{transition:transform 0.25s;font-size:11px;}
+.qr-arrow.open{transform:rotate(90deg);}
+.qr-body{display:none;margin-top:6px;border-radius:var(--rl);overflow:hidden;border:1px solid #e0e0e0;}
+.qr-body.open{display:block;animation:fadeUp .22s ease;}
+.qr-item{border-bottom:1px solid #f0ebe3;}
+.qr-item:last-child{border-bottom:none;}
+.qr-q{width:100%;padding:11px 14px;background:var(--s);border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--t);display:flex;align-items:center;justify-content:space-between;text-align:left;transition:background 0.15s;}
+.qr-q:hover{background:var(--s2);}
+.qr-q-left{display:flex;align-items:center;gap:7px;}
+.qr-q-arrow{transition:transform 0.2s;font-size:10px;color:var(--t3);flex-shrink:0;}
+.qr-q-arrow.open{transform:rotate(90deg);color:var(--mar);}
+.qr-a{display:none;padding:10px 14px;background:#fafaf5;font-size:12px;line-height:1.65;color:var(--t);white-space:pre-wrap;font-family:inherit;border-top:1px solid #f0ebe3;}
+.qr-a.open{display:block;}
+.qr-copy{margin-top:6px;padding:5px 12px;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;transition:opacity 0.15s;}
+.qr-copy:hover{opacity:0.85;}
+.qr-copy.copied{background:#0f6e56;}
+.qr-lang-note{font-size:10px;color:var(--t3);padding:8px 14px;background:var(--s2);border-bottom:1px solid #f0ebe3;display:flex;align-items:center;gap:5px;}
+body.dark .qr-body{border-color:var(--b);}
+body.dark .qr-item{border-color:var(--b);}
+body.dark .qr-q{background:var(--s);color:var(--t);}
+body.dark .qr-q:hover{background:var(--s2);}
+body.dark .qr-a{background:var(--s2);color:var(--t);border-color:var(--b);}
+body.dark .qr-lang-note{background:var(--s);border-color:var(--b);color:var(--t3);}
 
 /* ═══ PAPELERA ═══ */
 .papelera-btn{position:relative;padding:6px 12px;border:.5px solid #b45309;border-radius:var(--r);background:transparent;color:#b45309;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;}
@@ -1542,65 +1721,79 @@ table.fin tfoot .td-monto{color:var(--mar);font-size:14px;}
 
 /* ── TOAST NOTIFICATIONS ─────────────────────────────────── */
 #toastContainer{position:fixed;top:18px;right:18px;z-index:99999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
-.toast{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,0.18);font-size:13px;font-weight:500;min-width:260px;max-width:360px;pointer-events:all;animation:toastIn .28s cubic-bezier(.34,1.56,.64,1);transition:opacity .3s,transform .3s;}
+.toast{display:flex;align-items:flex-start;gap:10px;padding:13px 16px;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,0.18),0 2px 6px rgba(0,0,0,0.08);font-size:13px;font-weight:500;min-width:270px;max-width:360px;pointer-events:all;animation:toastIn .28s cubic-bezier(.34,1.56,.64,1);transition:opacity .3s,transform .3s;backdrop-filter:blur(8px);}
 .toast.out{opacity:0;transform:translateX(30px);}
-.toast-ok{background:#0f6e56;color:#fff;border-left:4px solid #70e000;}
-.toast-err{background:#b91c1c;color:#fff;border-left:4px solid #ff6b6b;}
-.toast-warn{background:#92400e;color:#fff;border-left:4px solid #fbbf24;}
-.toast-info{background:#1e3a5f;color:#fff;border-left:4px solid #60a5fa;}
+.toast-ok{background:rgba(15,110,86,0.95);color:#fff;border-left:4px solid #70e000;}
+.toast-err{background:rgba(185,28,28,0.95);color:#fff;border-left:4px solid #ff6b6b;}
+.toast-warn{background:rgba(146,64,14,0.95);color:#fff;border-left:4px solid #fbbf24;}
+.toast-info{background:rgba(30,58,95,0.95);color:#fff;border-left:4px solid #60a5fa;}
 .toast-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
 .toast-body{flex:1;line-height:1.4;}
 .toast-close{background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:16px;padding:0;line-height:1;flex-shrink:0;}
 .toast-close:hover{color:#fff;}
 @keyframes toastIn{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-#confirmModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999999;align-items:center;justify-content:center;}
+#confirmModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999999;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
 #confirmModal.active{display:flex;}
-.confirm-box{background:#fff;border-radius:14px;padding:28px 28px 20px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:toastIn .25s ease;}
-.confirm-title{font-size:15px;font-weight:700;color:var(--t);margin-bottom:8px;}
-.confirm-msg{font-size:13px;color:var(--t2);line-height:1.5;margin-bottom:20px;}
+.confirm-box{background:#fff;border-radius:18px;padding:28px 28px 20px;max-width:400px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.25);animation:toastIn .25s ease;}
+.confirm-title{font-size:16px;font-weight:800;color:var(--t);margin-bottom:8px;letter-spacing:-0.02em;}
+.confirm-msg{font-size:13px;color:var(--t2);line-height:1.55;margin-bottom:20px;}
 .confirm-btns{display:flex;gap:8px;justify-content:flex-end;}
-.confirm-cancel{padding:8px 18px;border:1px solid var(--b2);background:#fff;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;color:var(--t2);}
-.confirm-cancel:hover{background:var(--s2);}
-.confirm-ok{padding:8px 18px;background:#b91c1c;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;}
-.confirm-ok.safe{background:var(--mar);}
-.confirm-ok:hover{opacity:.88;}
-#inputModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999999;align-items:center;justify-content:center;}
+.confirm-cancel{padding:9px 18px;border:1.5px solid var(--b2);background:#fff;border-radius:10px;cursor:pointer;font-size:13px;font-family:inherit;color:var(--t2);font-weight:600;transition:all .15s;}
+.confirm-cancel:hover{background:var(--s2);border-color:var(--cam);}
+.confirm-ok{padding:9px 18px;background:#b91c1c;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;box-shadow:0 2px 6px rgba(185,28,28,0.2);}
+.confirm-ok.safe{background:linear-gradient(135deg,var(--mar),var(--cam));box-shadow:0 2px 6px rgba(92,61,30,0.2);}
+.confirm-ok:hover{opacity:.9;}
+#inputModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999999;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
 #inputModal.active{display:flex;}
-.input-box{background:#fff;border-radius:14px;padding:24px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:toastIn .25s ease;}
-.input-box label{display:block;font-size:12px;font-weight:700;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
-.input-box input{width:100%;padding:9px 12px;border:1.5px solid var(--b2);border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;}
-.input-box input:focus{border-color:var(--mar);}
+.input-box{background:#fff;border-radius:18px;padding:26px;max-width:380px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.25);animation:toastIn .25s ease;}
+.input-box label{display:block;font-size:11px;font-weight:800;color:var(--t2);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em;}
+.input-box input{width:100%;padding:10px 13px;border:1.5px solid var(--b2);border-radius:10px;font-size:14px;font-family:inherit;box-sizing:border-box;outline:none;transition:border-color .15s,box-shadow .15s;}
+.input-box input:focus{border-color:var(--cam);box-shadow:0 0 0 3px rgba(200,149,108,0.12);}
 .input-box-btns{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;}
 /* ── SYNC BADGE ──────────────────────────────────────────── */
-#syncBadge{position:fixed;bottom:14px;right:14px;z-index:1000;font-size:11px;padding:5px 10px;border-radius:20px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 10px rgba(0,0,0,.15);transition:all .3s;cursor:pointer;}
-#syncBadge.ok{background:#0f6e56;color:#fff;}
-#syncBadge.err{background:#b91c1c;color:#fff;}
-#syncBadge.off{background:#6b5740;color:#fff;}
+#syncBadge{position:fixed;bottom:14px;right:14px;z-index:1000;font-size:11px;padding:6px 12px;border-radius:999px;display:flex;align-items:center;gap:6px;box-shadow:var(--sh-md);transition:all .3s;cursor:pointer;font-weight:600;backdrop-filter:blur(8px);}
+#syncBadge.ok{background:rgba(15,110,86,0.9);color:#fff;}
+#syncBadge.err{background:rgba(185,28,28,0.9);color:#fff;}
+#syncBadge.off{background:rgba(107,87,64,0.9);color:#fff;}
 #syncBadge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.8;}
 #syncBadge.ok .dot{animation:sbpulse 2s infinite;}
 @keyframes sbpulse{0%,100%{opacity:.8;}50%{opacity:.3;}}
 /* ── MEJORAS GENERALES ───────────────────────────────────── */
-::-webkit-scrollbar{width:6px;height:6px;}
-::-webkit-scrollbar-track{background:var(--s2);}
-::-webkit-scrollbar-thumb{background:var(--cam);border-radius:3px;}
+::-webkit-scrollbar{width:7px;height:7px;}
+::-webkit-scrollbar-track{background:var(--s2);border-radius:4px;}
+::-webkit-scrollbar-thumb{background:var(--cam);border-radius:4px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--mar);}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--mar);outline-offset:2px;}
-button{transition:background .15s,transform .1s,opacity .15s;}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cam);outline-offset:2px;}
+button{transition:background .15s,transform .1s,opacity .15s,box-shadow .15s;}
 button:active:not(:disabled){transform:scale(.97);}
-.reg tbody tr:nth-child(even) td{background:rgba(92,61,30,.03);}
-.reg tbody tr:hover td{background:rgba(92,61,30,.06)!important;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-.pg.on .card{animation:fadeUp .22s ease both;}
-@media(max-width:600px){.wrap{padding:10px 8px;}.nav{gap:3px;padding:6px 8px;}.nb{padding:6px 8px;font-size:11px;}.card{padding:12px;}}
+.reg tbody tr:nth-child(even) td{background:rgba(92,61,30,.02);}
+.reg tbody tr:hover td{background:rgba(200,149,108,.06)!important;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.pg.on .card{animation:fadeUp .25s ease both;}
+.pg.on .card:nth-child(2){animation-delay:.04s;}
+.pg.on .card:nth-child(3){animation-delay:.08s;}
+.pg.on .card:nth-child(4){animation-delay:.12s;}
+@media(max-width:600px){.wrap{padding:10px 8px 50px;}.nav{gap:2px;padding:6px 6px;}.nb{padding:8px 6px;font-size:11px;}.card{padding:13px 14px;border-radius:12px;}}
 @media print{.nav,.bk-box,#syncBadge,.toast,.rh button,#checkinAlertBar,#darkToggle,.papelera-btn,.fr,.bexp,.bdng{display:none!important;}.pg{display:block!important;}body{background:#fff;color:#000;}.reg th,.reg td{border:0.5px solid #ccc;padding:4px 6px;font-size:10px;}.reg thead th{background:#eee!important;color:#000!important;}.tw{overflow:visible;}}
 
 /* ── MODO OSCURO ─────────────────────────────────────────── */
 body.dark{
-  --bg:#1a1410;--s:#251e17;--s2:#1f1812;
-  --b:rgba(255,255,255,.08);--b2:rgba(255,255,255,.15);
-  --t:#f5ede0;--t2:#c9a882;--t3:#8a6a4a;
-  --mar:#e8a96a;--mar2:#f0c090;--cam:#c8956c;
+  --bg:#121010;--s:#1C1916;--s2:#171412;--s3:#221E1A;
+  --b:rgba(255,255,255,.05);--b2:rgba(255,255,255,.10);--b3:rgba(255,255,255,.18);
+  --t:#F0E8D8;--t2:#B8A080;--t3:#7A6450;
+  --gold:#DDB888;--gold2:#E8C898;--gold3:#C89858;
+  --brown:#E8A96A;--brown2:#F0C090;--brown3:#C89858;
+  --el-1:0 1px 3px rgba(0,0,0,.2);
+  --el-2:0 3px 8px rgba(0,0,0,.3);
+  --el-3:0 8px 24px rgba(0,0,0,.35);
+  --el-4:0 16px 48px rgba(0,0,0,.4);
+  --el-glow:0 0 0 1px rgba(200,149,108,.2),0 4px 16px rgba(200,149,108,.08);
+}
+body.dark::before{
+  background:
+    radial-gradient(ellipse at 20% 0%,rgba(200,149,108,0.04) 0%,transparent 60%),
+    radial-gradient(ellipse at 80% 100%,rgba(92,61,30,0.03) 0%,transparent 50%);
 }
 body.dark .card{background:var(--s);border-color:var(--b);}
 body.dark .reg td,.dark .reg th{background:var(--s);color:var(--t);border-color:var(--b);}
@@ -1635,6 +1828,8 @@ body.dark .cx{background:var(--s2)!important;color:var(--t)!important;border-col
 body.dark .date-box{opacity:0.9;}
 body.dark .date-noches{background:var(--s2)!important;border-color:var(--b)!important;}
 body.dark .hk-room-card{background:rgba(255,255,255,0.08)!important;color:#fff!important;}
+body.dark .pax-card{background:var(--s)!important;border-color:var(--b2)!important;}
+body.dark .pax-label{color:var(--t2)!important;}
 body.dark .hk-room-card.is-clean{background:rgba(26,92,46,0.3)!important;}
 body.dark .hk-arrival-card{background:rgba(40,30,10,0.85)!important;border-color:rgba(200,149,108,0.4)!important;}
 body.dark .hk-supply-item{background:rgba(255,255,255,0.1)!important;border-color:rgba(255,255,255,0.2)!important;}
@@ -1795,6 +1990,17 @@ body.dark .confirm-cancel{background:var(--s2);color:var(--t2);border-color:var(
   <div id="pg-cot" class="pg on">
   <div class="wrap">
     <div class="card"><div class="ct">Idioma</div><div class="ig" id="igrid"></div></div>
+    <!-- ═══ QUICK WHATSAPP RESPONSES ═══ -->
+    <div class="qr-section">
+      <button class="qr-toggle" onclick="toggleQR()" id="qrToggle">
+        <span class="qr-toggle-left">💬 Respuestas rápidas WhatsApp</span>
+        <span class="qr-arrow" id="qrArrow">▶</span>
+      </button>
+      <div class="qr-body" id="qrBody">
+        <div class="qr-lang-note" id="qrLangNote">🌐 Idioma actual: Español — cambia arriba para otro idioma</div>
+        <div id="qrItems"></div>
+      </div>
+    </div>
     <div class="card"><div class="ct">Pasajero / grupo</div><input class="inp" id="nPax" placeholder="Nombre del pasajero o grupo" oninput="rTodo()"></div>
     <div class="card">
       <div class="ct">Fechas de estadía</div>
@@ -1837,13 +2043,13 @@ body.dark .confirm-cancel{background:var(--s2);color:var(--t2);border-color:var(
           </div>
           <div class="date-noches">
             <div class="dn-num" id="ddNoches">0</div>
-            <div class="dn-lbl">noches</div>
+            <div class="dn-lbl" id="ddNochesLbl">noches</div>
           </div>
         </div>
       </div>
   
     </div>
-    <div class="card"><div class="ct">Habitaciones solicitadas</div><div class="hl" id="hLista"></div><button class="ab" onclick="addHab()">+ Agregar habitación</button></div>
+    <div class="card"><div class="ct">Habitaciones solicitadas</div><div class="hl" id="hLista"></div><button class="ab" id="btnAddHab" onclick="addHab()">+ Agregar habitación</button></div>
     <div class="card"><div class="ct">Resumen</div><div id="resumen"></div></div>
     <div class="ct" style="padding:0 2px 7px;">Tipo de cotización</div>
     <div class="tabs">
@@ -1993,7 +2199,7 @@ body.dark .confirm-cancel{background:var(--s2);color:var(--t2);border-color:var(
     </div>
     <div class="tw">
       <table class="reg">
-        <thead><tr><th>#</th><th>Nombre</th><th>Nacionalidad</th><th>País residencia</th><th>Ciudad</th><th>Check-in</th><th>Noches</th><th>N° pax</th><th>Teléfono</th><th>Canal llegada</th><th>Patente</th><th>Habitación</th><th></th></tr></thead>
+        <thead><tr><th>#</th><th>Nombre</th><th>Nacionalidad</th><th>País residencia</th><th>Ciudad</th><th>Check-in</th><th>Check-out</th><th>Noches</th><th>N° pax</th><th>Teléfono</th><th>Canal llegada</th><th>Patente</th><th>Habitación</th><th></th></tr></thead>
         <tbody id="tBody"></tbody>
       </table>
     </div>
@@ -2008,6 +2214,7 @@ body.dark .confirm-cancel{background:var(--s2);color:var(--t2);border-color:var(
         <button class="fin-tab" id="ftDia" onclick="setFinTab('dia')">Por día</button>
         <button class="fin-tab" id="ftSem" onclick="setFinTab('sem')">Por semana</button>
         <button class="fin-tab" id="ftMes" onclick="setFinTab('mes')">Por mes</button>
+        <button class="fin-tab" id="ftAnio" onclick="setFinTab('anio')">Por año</button>
       </div>
       <button class="papelera-btn" onclick="showPapelera()" id="btnPapeleraFin">♻️ <span id="papeleraBadgeFin"></span>Papelera</button>
     </div>
@@ -2236,6 +2443,7 @@ const T={
   camas_lbl:"🛏 Camas", pax_base:"personas adicionales", adic_label:"adicional", precio_base_lbl:"Precio base hab.",
   pax_adic_count:"Personas adicionales", precio_adic_lbl:"Precio p/adic./noche",
   subtotal_adic:"Subtotal adicionales", cap_max_txt:"Cap. máx. alcanzada",
+  ui_eliminar:"✕ Eliminar",ui_agregar_hab:"+ Agregar habitación",ui_noches:"noches",
   firma:()=>`${HOTEL.firma}\n${HOTEL.nombre}\n${HOTEL.dir}\n✉️  ${BANCO.email}`
 },
 "Inglés":{
@@ -2257,6 +2465,7 @@ const T={
   camas_lbl:"🛏 Beds", pax_base:"additional guests", adic_label:"additional", precio_base_lbl:"Base room price",
   pax_adic_count:"Additional guests", precio_adic_lbl:"Price/extra/night",
   subtotal_adic:"Subtotal additionals", cap_max_txt:"Max capacity reached",
+  ui_eliminar:"✕ Remove",ui_agregar_hab:"+ Add room",ui_noches:"nights",
   firma:()=>`${HOTEL.firma}\n${HOTEL.nombre}\n${HOTEL.dir}\n✉️  ${BANCO.email}`
 },
 "Portugués":{
@@ -2278,6 +2487,7 @@ const T={
   camas_lbl:"🛏 Camas", pax_base:"hóspedes adicionais", adic_label:"adicional", precio_base_lbl:"Preço base quarto",
   pax_adic_count:"Hóspedes adicionais", precio_adic_lbl:"Preço/adic./noite",
   subtotal_adic:"Subtotal adicionais", cap_max_txt:"Capacidade máx. atingida",
+  ui_eliminar:"✕ Remover",ui_agregar_hab:"+ Adicionar quarto",ui_noches:"noites",
   firma:()=>`${HOTEL.firma}\n${HOTEL.nombre}\n${HOTEL.dir}\n✉️  ${BANCO.email}`
 },
 "Francés":{
@@ -2299,6 +2509,7 @@ const T={
   camas_lbl:"🛏 Lits", pax_base:"voyageurs supplémentaires", adic_label:"supplémentaire", precio_base_lbl:"Prix chambre de base",
   pax_adic_count:"Voyageurs supplémentaires", precio_adic_lbl:"Prix/suppl./nuit",
   subtotal_adic:"Sous-total suppléments", cap_max_txt:"Capacité max atteinte",
+  ui_eliminar:"✕ Supprimer",ui_agregar_hab:"+ Ajouter chambre",ui_noches:"nuits",
   firma:()=>`${HOTEL.firma}\n${HOTEL.nombre}\n${HOTEL.dir}\n✉️  ${BANCO.email}`
 },
 "Alemán":{
@@ -2320,6 +2531,7 @@ const T={
   camas_lbl:"🛏 Betten", pax_base:"Zusatzgäste", adic_label:"zusätzlich", precio_base_lbl:"Basispreis Zimmer",
   pax_adic_count:"Zusatzgäste", precio_adic_lbl:"Preis/Zusatz/Nacht",
   subtotal_adic:"Zwischensumme Zusätze", cap_max_txt:"Max. Kapazität erreicht",
+  ui_eliminar:"✕ Entfernen",ui_agregar_hab:"+ Zimmer hinzufügen",ui_noches:"Nächte",
   firma:()=>`${HOTEL.firma}\n${HOTEL.nombre}\n${HOTEL.dir}\n✉️  ${BANCO.email}`
 },
 "Italiano":{
@@ -2341,6 +2553,7 @@ const T={
   camas_lbl:"🛏 Letti", pax_base:"ospiti aggiuntivi", adic_label:"aggiuntivo", precio_base_lbl:"Prezzo base camera",
   pax_adic_count:"Ospiti aggiuntivi", precio_adic_lbl:"Prezzo/aggiuntivo/notte",
   subtotal_adic:"Subtotale aggiuntivi", cap_max_txt:"Capienza massima raggiunta",
+  ui_eliminar:"✕ Rimuovi",ui_agregar_hab:"+ Aggiungi camera",ui_noches:"notti",
   firma:()=>`${HOTEL.firma}\n${HOTEL.nombre}\n${HOTEL.dir}\n✉️  ${BANCO.email}`
 },
 "中文":{
@@ -2362,13 +2575,10 @@ const T={
   camas_lbl:"🛏 床型", pax_base:"额外客人", adic_label:"额外", precio_base_lbl:"房间基础价格",
   pax_adic_count:"额外客人", precio_adic_lbl:"每晚/额外/价格",
   subtotal_adic:"额外费用小计", cap_max_txt:"已达最大容量",
+  ui_eliminar:"✕ 删除",ui_agregar_hab:"+ 添加房间",ui_noches:"晚",
   firma:()=>`${HOTEL.firma}\n${HOTEL.nombre}\n${HOTEL.dir}\n✉️  ${BANCO.email}`
 }
 };
-
-// ══════════════════════════════
-// HELPERS
-// ══════════════════════════════
 function fmt(n){if(!n&&n!==0||isNaN(n))return "—";return "$"+Math.round(n).toLocaleString("es-CL");}
 function gN(){return document.getElementById("nPax").value.trim();}
 function gF(){return{i:document.getElementById("fIn").value,o:document.getElementById("fOut").value};}
@@ -2625,14 +2835,140 @@ document.getElementById("igrid").innerHTML=IDIOMAS.map(id=>
   `<button class="ib${id===lang?" on":""}" onclick="setLang('${id}')">${id}</button>`
 ).join("");
 function setLang(id){
-  if(tabC===2){
-    const hasPax=document.querySelector('.pg4 input[value]:not([value=""])');
-    if(hasPax){ toast("⚠️ Cambiando idioma se borrarán los datos de pasajeros ya ingresados","warn",4000); }
-  }
   lang=id;
   document.querySelectorAll(".ib").forEach(b=>b.classList.toggle("on",b.textContent===id));
   rTodo();
+  renderQR();
 }
+
+// ══════════════════════════════
+// QUICK WHATSAPP RESPONSES
+// ══════════════════════════════
+const QR_RESPONSES = {
+"Español":[
+  {q:"¿Tienen disponibilidad?",ico:"📅",a:`¡Hola! Gracias por contactarnos 😊\n\nPara verificar disponibilidad necesitamos:\n📅 Fechas de check-in y check-out\n👥 Cantidad de personas\n🛏 Tipo de habitación (si tiene preferencia)\n\nQuedamos atentos a su respuesta.\n\n${HOTEL.nombre}\n📍 Baquedano N° 80, Putre`},
+  {q:"¿Cuáles son los precios?",ico:"💰",a:`¡Hola! Nuestras tarifas por noche son:\n\n🛏 Single (1 pax): $50.000\n🛏 Doble (2 pax): $59.500\n💑 Matrimonial (2 pax): $65.450\n🛏 Triple (3 pax): $77.350\n👨‍👩‍👧 Familiar (3 pax): $90.000\n\n👤 Persona adicional: $20.000/noche (máx. 2)\n🍳 Todas las tarifas incluyen desayuno\n\nLos precios son por noche por habitación. ¿Para qué fechas le interesa?\n\n${HOTEL.nombre}`},
+  {q:"¿Cómo llego al hotel?",ico:"🗺️",a:`¡Hola! Nuestro hotel está ubicado en:\n📍 Baquedano N° 80, Putre, Arica y Parinacota, Chile\n\n🚗 Desde Arica: ~145 km por Ruta 11-CH (camino pavimentado, ~2.5 horas)\n\nNosotros manejamos el transporte desde Arica. Consulte horarios y tarifas.\n\n⚠️ Putre está a 3.500 msnm — recomendamos aclimatarse gradualmente.\n\n📲 Waze: busque "Hotel Las Vicuñas Putre"\n\n${HOTEL.nombre}`},
+  {q:"¿Qué incluye la tarifa?",ico:"🍳",a:`¡Hola! Nuestra tarifa incluye:\n\n🍳 Desayuno para todos los huéspedes\n☕ Lunes a viernes: 07:30 – 09:30\n☕ Fines de semana y festivos: 08:00 – 10:00\n📶 Wi-Fi en todo el hotel\n🅿️ Estacionamiento gratuito\n🏔 Acceso a áreas comunes con vista a la cordillera\n\nToallas de exterior para termas/lagunas: arriendo $2.000 c/u\n\n${HOTEL.nombre}`},
+  {q:"Horarios check-in / check-out",ico:"🕐",a:`¡Hola! Nuestros horarios son:\n\n🛎 Check-in: desde las 14:00 hrs.\n🚪 Check-out: hasta las 12:00 hrs.\n\nSi necesita un horario diferente, consúltenos y haremos lo posible por acomodarlo.\n\n${HOTEL.nombre}`},
+  {q:"¿Tienen estacionamiento?",ico:"🅿️",a:`¡Sí! Contamos con estacionamiento gratuito para nuestros huéspedes dentro del recinto del hotel.\n\n🅿️ Estacionamiento privado y seguro\n🚗 Acceso directo\n💰 Sin costo adicional\n\n${HOTEL.nombre}`},
+  {q:"¿Hay Wi-Fi?",ico:"📶",a:`¡Sí! Tenemos Wi-Fi gratuito disponible en todo el hotel.\n\n📶 Cobertura en habitaciones y áreas comunes\n💰 Sin costo adicional\n\n⚠️ Importante: al estar en el Altiplano, la conexión puede ser más lenta que en ciudades grandes, pero funciona bien para navegación general y mensajería.\n\n${HOTEL.nombre}`},
+  {q:"¿Organizan tours / excursiones?",ico:"🏔",a:`¡Sí! Organizamos excursiones a los principales atractivos del Altiplano:\n\n🏔 Lago Chungará y Volcán Parinacota\n🦩 Salar de Surire\n🌋 Parque Nacional Lauca\n🏛 Arica Histórico\n🗿 Pueblo de Visviri (Tripartito Chile-Bolivia-Perú)\n\n📲 Consulte disponibilidad y precios de tours con nosotros directamente.\n\n${HOTEL.nombre}`},
+  {q:"Mal de altura / recomendaciones",ico:"⛰️",a:`¡Hola! Putre está a 3.500 msnm, por lo que es normal sentir algo de mal de altura (puna). Nuestras recomendaciones:\n\n💧 Beber mucha agua\n🚶 Caminar lento las primeras horas\n☕ Tomar mate de coca (disponible en el hotel)\n🍽 Comer liviano el primer día\n💤 Descansar al llegar\n⚠️ Evitar alcohol las primeras 24 horas\n\nSi viene desde el nivel del mar, lo ideal es hacer una parada en el camino para aclimatarse.\n\n${HOTEL.nombre}`},
+  {q:"Datos bancarios para transferencia",ico:"🏦",a:`¡Hola! Para confirmar su reserva, nuestros datos bancarios son:\n\n🏦 DATOS DE TRANSFERENCIA\n  Titular: ${BANCO.titular}\n  RUT: ${BANCO.rut}\n  Banco: ${BANCO.banco}\n  ${BANCO.cuenta} N° ${BANCO.numero}\n  Email: ${BANCO.email}\n\n💳 Se requiere un anticipo del 50% para confirmar.\nEl saldo restante se paga al check-in.\n\n${HOTEL.nombre}`},
+  {q:"Confirmación de reserva recibida",ico:"✅",a:`¡Hola! Confirmamos la recepción de su transferencia ✅\n\nSu reserva está confirmada. Le enviaremos los detalles completos de su estadía en breve.\n\n¡Le esperamos con gusto en el Altiplano! 🦙\n\n${HOTEL.nombre}\n📍 Baquedano N° 80, Putre`},
+],
+"Inglés":[
+  {q:"Do you have availability?",ico:"📅",a:`Hello! Thank you for contacting us 😊\n\nTo check availability, we need:\n📅 Check-in and check-out dates\n👥 Number of guests\n🛏 Room type preference (if any)\n\nWe look forward to hearing from you.\n\n${HOTEL.nombre}\n📍 Baquedano N° 80, Putre, Chile`},
+  {q:"What are the rates?",ico:"💰",a:`Hello! Our nightly rates are:\n\n🛏 Single (1 guest): $50,000 CLP (~USD $55)\n🛏 Double (2 guests): $59,500 CLP (~USD $65)\n💑 Queen room (2 guests): $65,450 CLP (~USD $72)\n🛏 Triple (3 guests): $77,350 CLP (~USD $85)\n👨‍👩‍👧 Family (3 guests): $90,000 CLP (~USD $99)\n\n👤 Extra person: $20,000 CLP/night (max 2)\n🍳 All rates include breakfast\n\nPrices are per room per night. What dates are you interested in?\n\n${HOTEL.nombre}`},
+  {q:"How do I get to the hotel?",ico:"🗺️",a:`Hello! Our hotel is located at:\n📍 Baquedano N° 80, Putre, Arica y Parinacota, Chile\n\n🚗 From Arica: ~145 km via Route 11-CH (paved road, ~2.5 hours)\n\nWe handle transportation from Arica. Ask us about schedules and rates.\n\n⚠️ Putre is at 3,500m altitude — we recommend gradual acclimatization.\n\n📲 Waze: search "Hotel Las Vicuñas Putre"\n\n${HOTEL.nombre}`},
+  {q:"What's included in the rate?",ico:"🍳",a:`Hello! Our rate includes:\n\n🍳 Breakfast for all guests\n☕ Mon–Fri: 07:30 – 09:30\n☕ Weekends & holidays: 08:00 – 10:00\n📶 Wi-Fi throughout the hotel\n🅿️ Free parking\n🏔 Access to common areas with mountain views\n\nOutdoor towels for hot springs/lagoons: rental $2,000 CLP each\n\n${HOTEL.nombre}`},
+  {q:"Check-in / Check-out times",ico:"🕐",a:`Hello! Our times are:\n\n🛎 Check-in: from 2:00 PM\n🚪 Check-out: until 12:00 PM (noon)\n\nIf you need a different time, let us know and we'll do our best to accommodate.\n\n${HOTEL.nombre}`},
+  {q:"Do you have parking?",ico:"🅿️",a:`Yes! We have free parking for our guests within the hotel grounds.\n\n🅿️ Private and secure parking\n🚗 Direct access\n💰 No additional charge\n\n${HOTEL.nombre}`},
+  {q:"Is there Wi-Fi?",ico:"📶",a:`Yes! We have free Wi-Fi throughout the hotel.\n\n📶 Coverage in rooms and common areas\n💰 No additional charge\n\n⚠️ Note: being in the Altiplano, the connection may be slower than in large cities, but works well for general browsing and messaging.\n\n${HOTEL.nombre}`},
+  {q:"Do you organize tours?",ico:"🏔",a:`Yes! We organize excursions to the main Altiplano attractions:\n\n🏔 Chungará Lake & Parinacota Volcano\n🦩 Surire Salt Flat\n🌋 Lauca National Park\n🏛 Historic Arica\n🗿 Visviri village (Chile-Bolivia-Peru tripoint)\n\n📲 Contact us for tour availability and prices.\n\n${HOTEL.nombre}`},
+  {q:"Altitude sickness tips",ico:"⛰️",a:`Hello! Putre sits at 3,500m (11,500 ft) altitude. Some altitude effects are normal. Our tips:\n\n💧 Drink plenty of water\n🚶 Walk slowly the first hours\n☕ Try coca tea (available at the hotel)\n🍽 Eat light on the first day\n💤 Rest upon arrival\n⚠️ Avoid alcohol for the first 24 hours\n\nIf coming from sea level, consider a stop along the way to acclimatize.\n\n${HOTEL.nombre}`},
+  {q:"Bank transfer details",ico:"🏦",a:`Hello! To confirm your reservation, our bank details are:\n\n🏦 BANK TRANSFER DETAILS\n  Account holder: ${BANCO.titular}\n  Tax ID (RUT): ${BANCO.rut}\n  Bank: ${BANCO.banco}\n  ${BANCO.cuenta} No. ${BANCO.numero}\n  Email: ${BANCO.email}\n\n💳 A 50% deposit is required to confirm.\nThe remaining balance is paid at check-in.\n\n${HOTEL.nombre}`},
+  {q:"Reservation confirmed",ico:"✅",a:`Hello! We confirm receipt of your transfer ✅\n\nYour reservation is confirmed. We will send you the full details of your stay shortly.\n\nWe look forward to welcoming you to the Altiplano! 🦙\n\n${HOTEL.nombre}\n📍 Baquedano N° 80, Putre, Chile`},
+],
+"Portugués":[
+  {q:"Vocês têm disponibilidade?",ico:"📅",a:`Olá! Obrigado por nos contatar 😊\n\nPara verificar a disponibilidade precisamos de:\n📅 Datas de check-in e check-out\n👥 Número de hóspedes\n🛏 Tipo de quarto (se tiver preferência)\n\nAguardamos sua resposta.\n\n${HOTEL.nombre}\n📍 Baquedano N° 80, Putre, Chile`},
+  {q:"Quais são as tarifas?",ico:"💰",a:`Olá! Nossas tarifas por noite são:\n\n🛏 Single (1 hóspede): $50.000 CLP\n🛏 Duplo (2 hóspedes): $59.500 CLP\n💑 Casal (2 hóspedes): $65.450 CLP\n🛏 Triplo (3 hóspedes): $77.350 CLP\n👨‍👩‍👧 Familiar (3 hóspedes): $90.000 CLP\n\n👤 Pessoa adicional: $20.000 CLP/noite (máx. 2)\n🍳 Todas as tarifas incluem café da manhã\n\n${HOTEL.nombre}`},
+  {q:"Como chego ao hotel?",ico:"🗺️",a:`Olá! Nosso hotel está localizado em:\n📍 Baquedano N° 80, Putre, Chile\n\n🚗 De Arica: ~145 km pela Ruta 11-CH (estrada pavimentada, ~2,5 horas)\n\nNós cuidamos do transporte desde Arica. Consulte horários e tarifas.\n\n⚠️ Putre está a 3.500m de altitude — recomendamos aclimatação gradual.\n\n${HOTEL.nombre}`},
+  {q:"O que está incluído na tarifa?",ico:"🍳",a:`Olá! Nossa tarifa inclui:\n\n🍳 Café da manhã para todos os hóspedes\n☕ Seg–Sex: 07:30 – 09:30\n☕ Fins de semana e feriados: 08:00 – 10:00\n📶 Wi-Fi em todo o hotel\n🅿️ Estacionamento gratuito\n\nToalhas de exterior para termas: aluguel $2.000 CLP cada\n\n${HOTEL.nombre}`},
+  {q:"Horários de check-in / check-out",ico:"🕐",a:`Olá! Nossos horários são:\n\n🛎 Check-in: a partir das 14:00\n🚪 Check-out: até as 12:00\n\n${HOTEL.nombre}`},
+  {q:"Dados bancários para transferência",ico:"🏦",a:`Olá! Para confirmar sua reserva:\n\n🏦 DADOS BANCÁRIOS\n  Titular: ${BANCO.titular}\n  RUT: ${BANCO.rut}\n  Banco: ${BANCO.banco}\n  ${BANCO.cuenta} N° ${BANCO.numero}\n  Email: ${BANCO.email}\n\n💳 É necessário um depósito de 50% para confirmar.\n\n${HOTEL.nombre}`},
+  {q:"Dicas sobre mal de altitude",ico:"⛰️",a:`Olá! Putre está a 3.500m de altitude. Algumas dicas:\n\n💧 Beba muita água\n🚶 Caminhe devagar nas primeiras horas\n☕ Experimente chá de coca (disponível no hotel)\n🍽 Coma leve no primeiro dia\n💤 Descanse ao chegar\n⚠️ Evite álcool nas primeiras 24 horas\n\n${HOTEL.nombre}`},
+  {q:"Reserva confirmada",ico:"✅",a:`Olá! Confirmamos o recebimento da sua transferência ✅\n\nSua reserva está confirmada. Enviaremos os detalhes completos em breve.\n\nAguardamos sua visita! 🦙\n\n${HOTEL.nombre}`},
+],
+"Francés":[
+  {q:"Avez-vous des disponibilités ?",ico:"📅",a:`Bonjour ! Merci de nous contacter 😊\n\nPour vérifier la disponibilité :\n📅 Dates d'arrivée et de départ\n👥 Nombre de voyageurs\n🛏 Type de chambre souhaité\n\nNous attendons votre réponse.\n\n${HOTEL.nombre}\n📍 Baquedano N° 80, Putre, Chili`},
+  {q:"Quels sont les tarifs ?",ico:"💰",a:`Bonjour ! Nos tarifs par nuit :\n\n🛏 Simple (1 pers.) : $50.000 CLP\n🛏 Double (2 pers.) : $59.500 CLP\n💑 Matrimoniale (2 pers.) : $65.450 CLP\n🛏 Triple (3 pers.) : $77.350 CLP\n👨‍👩‍👧 Familiale (3 pers.) : $90.000 CLP\n\n👤 Personne suppl. : $20.000 CLP/nuit (max 2)\n🍳 Petit-déjeuner inclus\n\n${HOTEL.nombre}`},
+  {q:"Comment arriver à l'hôtel ?",ico:"🗺️",a:`Bonjour ! Notre hôtel est situé à :\n📍 Baquedano N° 80, Putre, Chili\n\n🚗 Depuis Arica : ~145 km par la Ruta 11-CH (~2,5 heures)\n\nNous gérons le transport depuis Arica. Consultez-nous pour les horaires.\n\n⚠️ Putre est à 3 500 m d'altitude — nous recommandons une acclimatation progressive.\n\n${HOTEL.nombre}`},
+  {q:"Que comprend le tarif ?",ico:"🍳",a:`Bonjour ! Notre tarif comprend :\n\n🍳 Petit-déjeuner pour tous\n☕ Lun–Ven : 07h30 – 09h30\n☕ Week-ends et jours fériés : 08h00 – 10h00\n📶 Wi-Fi dans tout l'hôtel\n🅿️ Parking gratuit\n\nServiettes d'extérieur pour thermes : location 2 000 CLP l'unité\n\n${HOTEL.nombre}`},
+  {q:"Horaires d'arrivée / départ",ico:"🕐",a:`Bonjour !\n\n🛎 Arrivée : à partir de 14h00\n🚪 Départ : jusqu'à 12h00\n\n${HOTEL.nombre}`},
+  {q:"Coordonnées bancaires",ico:"🏦",a:`Bonjour ! Pour confirmer votre réservation :\n\n🏦 COORDONNÉES BANCAIRES\n  Titulaire : ${BANCO.titular}\n  RUT : ${BANCO.rut}\n  Banque : ${BANCO.banco}\n  ${BANCO.cuenta} N° ${BANCO.numero}\n  Email : ${BANCO.email}\n\n💳 Un acompte de 50 % est requis.\n\n${HOTEL.nombre}`},
+  {q:"Conseils sur le mal d'altitude",ico:"⛰️",a:`Bonjour ! Putre est à 3 500 m. Nos conseils :\n\n💧 Buvez beaucoup d'eau\n🚶 Marchez lentement les premières heures\n☕ Essayez le thé de coca (disponible à l'hôtel)\n🍽 Mangez léger le premier jour\n💤 Reposez-vous à l'arrivée\n⚠️ Évitez l'alcool les premières 24 heures\n\n${HOTEL.nombre}`},
+  {q:"Réservation confirmée",ico:"✅",a:`Bonjour ! Nous confirmons la réception de votre virement ✅\n\nVotre réservation est confirmée. Nous vous enverrons tous les détails prochainement.\n\nAu plaisir de vous accueillir ! 🦙\n\n${HOTEL.nombre}`},
+],
+"Alemán":[
+  {q:"Haben Sie Verfügbarkeit?",ico:"📅",a:`Hallo! Vielen Dank für Ihre Anfrage 😊\n\nUm die Verfügbarkeit zu prüfen, benötigen wir:\n📅 Check-in- und Check-out-Datum\n👥 Anzahl der Gäste\n🛏 Zimmertyp-Präferenz\n\nWir freuen uns auf Ihre Antwort.\n\n${HOTEL.nombre}\n📍 Baquedano N° 80, Putre, Chile`},
+  {q:"Was sind die Preise?",ico:"💰",a:`Hallo! Unsere Preise pro Nacht:\n\n🛏 Einzel (1 Gast): $50.000 CLP\n🛏 Doppel (2 Gäste): $59.500 CLP\n💑 Ehezimmer (2 Gäste): $65.450 CLP\n🛏 Dreibett (3 Gäste): $77.350 CLP\n👨‍👩‍👧 Familie (3 Gäste): $90.000 CLP\n\n👤 Zusatzperson: $20.000 CLP/Nacht (max 2)\n🍳 Frühstück inklusive\n\n${HOTEL.nombre}`},
+  {q:"Wie komme ich zum Hotel?",ico:"🗺️",a:`Hallo! Unser Hotel befindet sich in:\n📍 Baquedano N° 80, Putre, Chile\n\n🚗 Von Arica: ~145 km über Ruta 11-CH (~2,5 Stunden)\n\nWir organisieren den Transport ab Arica. Fragen Sie uns nach Fahrplänen.\n\n⚠️ Putre liegt auf 3.500 m Höhe — wir empfehlen schrittweise Akklimatisierung.\n\n${HOTEL.nombre}`},
+  {q:"Was ist im Preis enthalten?",ico:"🍳",a:`Hallo! Im Preis enthalten:\n\n🍳 Frühstück für alle Gäste\n☕ Mo–Fr: 07:30 – 09:30\n☕ Wochenende & Feiertage: 08:00 – 10:00\n📶 WLAN im gesamten Hotel\n🅿️ Kostenloser Parkplatz\n\nOutdoor-Handtücher für Thermalquellen: Miete 2.000 CLP/Stück\n\n${HOTEL.nombre}`},
+  {q:"Check-in / Check-out Zeiten",ico:"🕐",a:`Hallo!\n\n🛎 Check-in: ab 14:00 Uhr\n🚪 Check-out: bis 12:00 Uhr\n\n${HOTEL.nombre}`},
+  {q:"Bankverbindung",ico:"🏦",a:`Hallo! Zur Bestätigung Ihrer Buchung:\n\n🏦 BANKVERBINDUNG\n  Kontoinhaber: ${BANCO.titular}\n  Steuer-ID: ${BANCO.rut}\n  Bank: ${BANCO.banco}\n  ${BANCO.cuenta} Nr. ${BANCO.numero}\n  E-Mail: ${BANCO.email}\n\n💳 Eine Anzahlung von 50 % ist erforderlich.\n\n${HOTEL.nombre}`},
+  {q:"Tipps zur Höhenkrankheit",ico:"⛰️",a:`Hallo! Putre liegt auf 3.500 m. Unsere Tipps:\n\n💧 Viel Wasser trinken\n🚶 In den ersten Stunden langsam gehen\n☕ Kokatee probieren (im Hotel verfügbar)\n🍽 Am ersten Tag leicht essen\n💤 Bei Ankunft ausruhen\n⚠️ In den ersten 24 Stunden keinen Alkohol\n\n${HOTEL.nombre}`},
+  {q:"Buchung bestätigt",ico:"✅",a:`Hallo! Wir bestätigen den Eingang Ihrer Überweisung ✅\n\nIhre Reservierung ist bestätigt. Wir senden Ihnen in Kürze alle Details.\n\nWir freuen uns auf Ihren Besuch! 🦙\n\n${HOTEL.nombre}`},
+],
+"Italiano":[
+  {q:"Avete disponibilità?",ico:"📅",a:`Salve! Grazie per averci contattato 😊\n\nPer verificare la disponibilità abbiamo bisogno di:\n📅 Date di check-in e check-out\n👥 Numero di ospiti\n🛏 Tipo di camera preferito\n\nRestiamo in attesa.\n\n${HOTEL.nombre}\n📍 Baquedano N° 80, Putre, Cile`},
+  {q:"Quali sono le tariffe?",ico:"💰",a:`Salve! Le nostre tariffe a notte:\n\n🛏 Singola (1 ospite): $50.000 CLP\n🛏 Doppia (2 ospiti): $59.500 CLP\n💑 Matrimoniale (2 ospiti): $65.450 CLP\n🛏 Tripla (3 ospiti): $77.350 CLP\n👨‍👩‍👧 Familiare (3 ospiti): $90.000 CLP\n\n👤 Persona aggiuntiva: $20.000 CLP/notte (max 2)\n🍳 Colazione inclusa\n\n${HOTEL.nombre}`},
+  {q:"Come arrivo all'hotel?",ico:"🗺️",a:`Salve! Il nostro hotel si trova a:\n📍 Baquedano N° 80, Putre, Cile\n\n🚗 Da Arica: ~145 km tramite Ruta 11-CH (~2,5 ore)\n\nGestiamo il trasporto da Arica. Chiedete orari e tariffe.\n\n⚠️ Putre è a 3.500 m — consigliamo un acclimatamento graduale.\n\n${HOTEL.nombre}`},
+  {q:"Cosa include la tariffa?",ico:"🍳",a:`Salve! La nostra tariffa include:\n\n🍳 Colazione per tutti gli ospiti\n☕ Lun–Ven: 07:30 – 09:30\n☕ Fine settimana e festivi: 08:00 – 10:00\n📶 Wi-Fi in tutto l'hotel\n🅿️ Parcheggio gratuito\n\nAsciugamani da esterno per terme: noleggio 2.000 CLP l'uno\n\n${HOTEL.nombre}`},
+  {q:"Orari check-in / check-out",ico:"🕐",a:`Salve!\n\n🛎 Check-in: dalle 14:00\n🚪 Check-out: entro le 12:00\n\n${HOTEL.nombre}`},
+  {q:"Coordinate bancarie",ico:"🏦",a:`Salve! Per confermare la prenotazione:\n\n🏦 DATI BANCARI\n  Intestatario: ${BANCO.titular}\n  Codice fiscale: ${BANCO.rut}\n  Banca: ${BANCO.banco}\n  ${BANCO.cuenta} N° ${BANCO.numero}\n  Email: ${BANCO.email}\n\n💳 È richiesto un acconto del 50%.\n\n${HOTEL.nombre}`},
+  {q:"Consigli per il mal d'altitudine",ico:"⛰️",a:`Salve! Putre è a 3.500 m. I nostri consigli:\n\n💧 Bere molta acqua\n🚶 Camminare piano nelle prime ore\n☕ Provare il tè di coca (disponibile in hotel)\n🍽 Mangiare leggero il primo giorno\n💤 Riposarsi all'arrivo\n⚠️ Evitare alcol nelle prime 24 ore\n\n${HOTEL.nombre}`},
+  {q:"Prenotazione confermata",ico:"✅",a:`Salve! Confermiamo la ricezione del vostro bonifico ✅\n\nLa vostra prenotazione è confermata. Vi invieremo tutti i dettagli a breve.\n\nVi aspettiamo! 🦙\n\n${HOTEL.nombre}`},
+],
+"中文":[
+  {q:"你们有空房吗？",ico:"📅",a:`您好！感谢您联系我们 😊\n\n请提供以下信息以查询空房：\n📅 入住和退房日期\n👥 客人人数\n🛏 房型偏好\n\n期待您的回复。\n\n${HOTEL.nombre}\n📍 智利普特雷 Baquedano N° 80`},
+  {q:"房价是多少？",ico:"💰",a:`您好！我们的每晚房价：\n\n🛏 单人间（1人）：$50,000 CLP\n🛏 双人间（2人）：$59,500 CLP\n💑 大床房（2人）：$65,450 CLP\n🛏 三人间（3人）：$77,350 CLP\n👨‍👩‍👧 家庭房（3人）：$90,000 CLP\n\n👤 加人：$20,000 CLP/晚（最多2人）\n🍳 所有房价均含早餐\n\n${HOTEL.nombre}`},
+  {q:"如何到达酒店？",ico:"🗺️",a:`您好！酒店地址：\n📍 智利普特雷 Baquedano N° 80\n\n🚗 从阿里卡出发：约145公里，走11-CH公路（约2.5小时）\n\n我们提供从阿里卡的接送服务，请咨询时刻表。\n\n⚠️ 普特雷海拔3,500米，建议逐步适应高海拔。\n\n${HOTEL.nombre}`},
+  {q:"房价包含什么？",ico:"🍳",a:`您好！房价包含：\n\n🍳 所有客人的早餐\n☕ 周一至周五：07:30 – 09:30\n☕ 周末及节假日：08:00 – 10:00\n📶 全酒店Wi-Fi\n🅿️ 免费停车\n\n户外毛巾（温泉用）：租金2,000 CLP/条\n\n${HOTEL.nombre}`},
+  {q:"入住/退房时间",ico:"🕐",a:`您好！\n\n🛎 入住：14:00起\n🚪 退房：12:00前\n\n${HOTEL.nombre}`},
+  {q:"银行转账信息",ico:"🏦",a:`您好！确认预订的银行信息：\n\n🏦 转账详情\n  户名：${BANCO.titular}\n  税号：${BANCO.rut}\n  银行：${BANCO.banco}\n  ${BANCO.cuenta} N° ${BANCO.numero}\n  邮箱：${BANCO.email}\n\n💳 需预付50%定金确认预订。\n\n${HOTEL.nombre}`},
+  {q:"高原反应建议",ico:"⛰️",a:`您好！普特雷海拔3,500米。建议：\n\n💧 多喝水\n🚶 前几小时慢行\n☕ 试试古柯茶（酒店提供）\n🍽 第一天吃清淡\n💤 到达后先休息\n⚠️ 前24小时避免饮酒\n\n${HOTEL.nombre}`},
+  {q:"预订已确认",ico:"✅",a:`您好！确认收到您的转账 ✅\n\n您的预订已确认，我们将尽快发送详细信息。\n\n期待您的到来！🦙\n\n${HOTEL.nombre}`},
+],
+};
+
+let qrOpen=false;
+function toggleQR(){
+  qrOpen=!qrOpen;
+  const body=document.getElementById("qrBody");
+  const arrow=document.getElementById("qrArrow");
+  if(body) body.classList.toggle("open",qrOpen);
+  if(arrow) arrow.classList.toggle("open",qrOpen);
+}
+function renderQR(){
+  const langNames={"Español":"Español","Inglés":"English","Portugués":"Português","Francés":"Français","Alemán":"Deutsch","Italiano":"Italiano","中文":"中文"};
+  const note=document.getElementById("qrLangNote");
+  if(note) note.innerHTML=`🌐 ${langNames[lang]||lang}`;
+  const items=QR_RESPONSES[lang]||QR_RESPONSES["Español"];
+  const el=document.getElementById("qrItems");
+  if(!el) return;
+  el.innerHTML=items.map((r,i)=>`<div class="qr-item">
+    <button class="qr-q" onclick="toggleQRItem(${i})">
+      <span class="qr-q-left">${r.ico} ${r.q}</span>
+      <span class="qr-q-arrow" id="qra_${i}">▶</span>
+    </button>
+    <div class="qr-a" id="qrans_${i}">${esc(r.a)}\n<br><button class="qr-copy" id="qrc_${i}" onclick="event.stopPropagation();copyQR(${i})">📋 Copiar mensaje</button></div>
+  </div>`).join("");
+}
+function toggleQRItem(i){
+  const ans=document.getElementById("qrans_"+i);
+  const arrow=document.getElementById("qra_"+i);
+  if(!ans) return;
+  const isOpen=ans.classList.toggle("open");
+  if(arrow) arrow.classList.toggle("open",isOpen);
+}
+function copyQR(i){
+  const items=QR_RESPONSES[lang]||QR_RESPONSES["Español"];
+  const r=items[i];
+  if(!r) return;
+  const btn=document.getElementById("qrc_"+i);
+  const ok=()=>{if(btn){btn.classList.add("copied");btn.textContent="✅ ¡Copiado!";setTimeout(()=>{btn.classList.remove("copied");btn.textContent="📋 Copiar mensaje";},2000);}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(r.a).then(ok).catch(()=>{
+      const ta=document.createElement("textarea");ta.value=r.a;ta.style.cssText="position:fixed;opacity:0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok();}catch(e){toast("No se pudo copiar","warn");}document.body.removeChild(ta);
+    });
+  } else {
+    const ta=document.createElement("textarea");ta.value=r.a;ta.style.cssText="position:fixed;opacity:0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok();}catch(e){toast("No se pudo copiar","warn");}document.body.removeChild(ta);
+  }
+}
+// Init QR responses on load
+try{ renderQR(); }catch(e){}
 
 // ══════════════════════════════
 // FECHAS
@@ -2709,6 +3045,8 @@ function updateDateDisplay(){
     document.getElementById("ddDiaCo").textContent=co.dia;
     document.getElementById("ddFechaCo").textContent=co.fecha;
     document.getElementById("ddNoches").textContent=noches;
+    const nochesLbl=document.getElementById("ddNochesLbl");
+    if(nochesLbl) nochesLbl.textContent=T[lang]?.ui_noches||"noches";
   } else {
     dd.style.display="none";
   }
@@ -2742,15 +3080,89 @@ function setTab(t){
 // ══════════════════════════════
 // HABITACIONES UI
 // ══════════════════════════════
-function addHab(){const lastIdx=items.length>0?items[items.length-1].tipoIdx:1;items.push({tipoIdx:lastIdx,huespedes:HABS[lastIdx].capBase,roomNum:null});const{i,o}=gF();items[items.length-1].roomNum=asignarHab(lastIdx,i,o);rTodo();}
-function delHab(i){if(items.length===1)return;items.splice(i,1);rTodo();}
-function chTipo(i,v){items[i].tipoIdx=parseInt(v);const mx=capMax(items[i].tipoIdx);if(items[i].huespedes>mx)items[i].huespedes=mx;const{i:fi,o}=gF();items[i].roomNum=asignarHab(items[i].tipoIdx,fi,o);rTodo();}
+let _skipPaxSaveRestore=false;
+function addHab(){
+  const lastIdx=items.length>0?items[items.length-1].tipoIdx:1;
+  items.push({tipoIdx:lastIdx,huespedes:HABS[lastIdx].capBase,roomNum:null});
+  const{i,o}=gF();
+  // Exclude rooms already assigned to other items in this cotización
+  const excludeRooms=items.slice(0,-1).map(it=>it.roomNum).filter(Boolean);
+  items[items.length-1].roomNum=asignarHab(lastIdx,i,o,excludeRooms);
+  rTodo();
+}
+function delHab(i){if(items.length===1)return;_skipPaxSaveRestore=true;items.splice(i,1);rTodo();_skipPaxSaveRestore=false;}
+function chTipo(i,v){
+  items[i].tipoIdx=parseInt(v);
+  const mx=capMax(items[i].tipoIdx);
+  if(items[i].huespedes>mx) items[i].huespedes=mx;
+  const{i:fi,o}=gF();
+  // Exclude rooms assigned to OTHER items (not this one being changed)
+  const excludeRooms=items.filter((_,idx)=>idx!==i).map(it=>it.roomNum).filter(Boolean);
+  items[i].roomNum=asignarHab(items[i].tipoIdx,fi,o,excludeRooms);
+  rTodo();
+}
 function chH(i,d){const mx=capMax(items[i].tipoIdx);items[i].huespedes=Math.max(1,Math.min(mx,items[i].huespedes+d));rTodo();}
 
 // ══════════════════════════════
 // RENDER
 // ══════════════════════════════
+// Save passenger input values before rTodo destroys them
+function _savePaxInputs(){
+  if(tabC!==2) return null;
+  const data={};
+  items.forEach((it,i)=>{
+    for(let p=0;p<it.huespedes;p++){
+      const key=`${i}_${p}`;
+      data[key]={
+        nombre:document.getElementById(`pn_${i}_${p}`)?.value||"",
+        doc:document.getElementById(`pd_${i}_${p}`)?.value||"",
+        tipodoc:document.getElementById(`pt_${i}_${p}`)?.value||"RUT",
+        nac:document.getElementById(`pna_${i}_${p}`)?.value||"",
+        resid:document.getElementById(`ppr_${i}_${p}`)?.value||"",
+        ciudad:document.getElementById(`pci_${i}_${p}`)?.value||""
+      };
+    }
+    data[`di_${i}`]=document.getElementById(`di_${i}`)?.value||"";
+  });
+  // Also save contacto/medio/patente
+  data._tel=document.getElementById("telContacto")?.value||"";
+  data._medio=document.getElementById("medioLlegada")?.value||"";
+  data._patente=document.getElementById("patente")?.value||"";
+  data._ndoc=document.getElementById("nDocumentoInp")?.value||"";
+  return data;
+}
+function _restorePaxInputs(data){
+  if(!data||tabC!==2) return;
+  items.forEach((it,i)=>{
+    for(let p=0;p<it.huespedes;p++){
+      const key=`${i}_${p}`;
+      if(!data[key]) continue;
+      const d=data[key];
+      const el=id=>document.getElementById(id);
+      if(el(`pn_${i}_${p}`)) el(`pn_${i}_${p}`).value=d.nombre;
+      if(el(`pd_${i}_${p}`)) el(`pd_${i}_${p}`).value=d.doc;
+      if(el(`pt_${i}_${p}`)) el(`pt_${i}_${p}`).value=d.tipodoc;
+      if(el(`pna_${i}_${p}`)) el(`pna_${i}_${p}`).value=d.nac;
+      if(el(`ppr_${i}_${p}`)) el(`ppr_${i}_${p}`).value=d.resid;
+      if(el(`pci_${i}_${p}`)) el(`pci_${i}_${p}`).value=d.ciudad;
+    }
+    const diEl=document.getElementById(`di_${i}`);
+    if(diEl&&data[`di_${i}`]) diEl.value=data[`di_${i}`];
+  });
+  // Restore contacto/medio/patente
+  const tel=document.getElementById("telContacto");
+  const medio=document.getElementById("medioLlegada");
+  const pat=document.getElementById("patente");
+  const ndoc=document.getElementById("nDocumentoInp");
+  if(tel&&data._tel) tel.value=data._tel;
+  if(medio&&data._medio){ medio.value=data._medio; togglePatente(); }
+  if(pat&&data._patente) pat.value=data._patente;
+  if(ndoc&&data._ndoc) ndoc.value=data._ndoc;
+}
+
 function rTodo(){
+  // ── Save passenger data before DOM rebuild (skip during delHab to avoid index corruption) ──
+  const savedPax=_skipPaxSaveRestore?null:_savePaxInputs();
   document.getElementById("hLista").innerHTML=items.map((it,i)=>{
     const h=HABS[it.tipoIdx];
     const nAdic=numAdic(it);
@@ -2761,15 +3173,15 @@ function rTodo(){
     const adicInfo=nAdic>0?`<div style="font-size:11px;color:#b45309;margin-top:4px;">+${nAdic} pax adicional${nAdic>1?"es":""} × ${fmt(PRECIO_ADIC)}/noche = ${fmt(nAdic*PRECIO_ADIC*noches)}</div>`:"";
     const capTag=it.huespedes>=mx?`<div style="font-size:11px;color:#9d174d;margin-top:2px;">⚠️ Capacidad máxima (${mx} pax)</div>`:"";
     return `<div class="hi">
-      <div class="hh"><span class="ht">${T[lang].hab} ${i+1}</span>${items.length>1?`<button class="db" onclick="delHab(${i})">✕ Eliminar</button>`:""}</div>
+      <div class="hh"><span class="ht">${T[lang].hab} ${i+1}</span>${items.length>1?`<button class="db" onclick="delHab(${i})">${T[lang].ui_eliminar||"✕ Eliminar"}</button>`:""}</div>
       <select class="cs" onchange="chTipo(${i},this.value)">${opts}</select>
       <div class="hsr">
-        <div class="cr"><span class="clbl">Huéspedes</span>
+        <div class="cr"><span class="clbl">${T[lang].huespedes}</span>
           <button class="bc" onclick="chH(${i},-1)">−</button>
           <span class="cn">${it.huespedes}</span>
           <button class="bc" onclick="chH(${i},1)">+</button>
         </div>
-        <div class="hsb">Subtotal: <span>${fmt(sub)}</span></div>
+        <div class="hsb">${T[lang].subtotal}: <span>${fmt(sub)}</span></div>
       </div>${adicInfo}${capTag}${rtag}</div>`;
   }).join("");
 
@@ -2778,34 +3190,50 @@ function rTodo(){
   let f=items.map((it,i)=>{
     const nA=numAdic(it);
     let row=`<div class="rf"><span class="rk">${T[lang].hab} ${i+1} — ${hn(it.tipoIdx)}${it.roomNum?" · Hab."+it.roomNum:""}</span><span class="rv">${fmt(subtotalHab(it))}</span></div>`;
-    if(nA>0) row+=`<div class="rf" style="padding-left:12px;"><span class="rk" style="color:#b45309;">  ↳ +${nA} pax adic. × ${fmt(PRECIO_ADIC)} × ${noches} noche${noches>1?"s":""}</span><span class="rv" style="color:#b45309;">${fmt(nA*PRECIO_ADIC*noches)}</span></div>`;
+    if(nA>0) row+=`<div class="rf" style="padding-left:12px;"><span class="rk" style="color:#b45309;">  ↳ +${nA} ${T[lang].pax_base||"pax adic."} × ${fmt(PRECIO_ADIC)} × ${noches} ${T[lang].ui_noches||"noches"}</span><span class="rv" style="color:#b45309;">${fmt(nA*PRECIO_ADIC*noches)}</span></div>`;
     return row;
   }).join("");
   const{i:_ci,o:_co}=gF();
-  if(_ci&&_co) f+=`<div class="rf"><span class="rk">Total noches</span><span class="rv">${noches}</span></div>`;
-  f+=`<div class="rf"><span class="rk">Total huéspedes</span><span class="rv">${totalH}</span></div>`;
-  f+=`<div class="rf tot"><span class="rk">Total estadía</span><span class="rv">${fmt(total)}</span></div>`;
+  if(_ci&&_co) f+=`<div class="rf"><span class="rk">${T[lang].t_noches}</span><span class="rv">${noches}</span></div>`;
+  f+=`<div class="rf"><span class="rk">${T[lang].t_huesp}</span><span class="rv">${totalH}</span></div>`;
+  f+=`<div class="rf tot"><span class="rk">${T[lang].total}</span><span class="rv">${fmt(total)}</span></div>`;
   document.getElementById("resumen").innerHTML=f;
+  // Translate add-room button
+  const addHabBtn=document.getElementById("btnAddHab");
+  if(addHabBtn) addHabBtn.textContent=T[lang].ui_agregar_hab||"+ Agregar habitación";
 
   if(tabC===2){
     const t=T[lang];
     const po=PAISES.map(p=>`<option value="${p}">${p}</option>`).join("");
+    const PAX_COLORS=["#5C3D1E","#C8956C","#8B6542","#A07050","#6B5740"];
     document.getElementById("pLista").innerHTML=items.map((it,i)=>{
       let inp="";
       for(let p=0;p<it.huespedes;p++){
-        inp+=`<div class="pg4">
-          <input id="pn_${i}_${p}" class="inp" placeholder="Nombre completo" oninput="rTxt()" style="font-size:12px;">
-          <input id="pd_${i}_${p}" class="inp" placeholder="RUT o N° pasaporte" oninput="rTxt()" style="font-size:12px;">
-          <select id="pt_${i}_${p}" class="inp" oninput="rTxt()" style="font-size:12px;"><option value="RUT">RUT (chileno)</option><option value="Pasaporte">Pasaporte</option></select>
-          <select id="pna_${i}_${p}" class="inp" oninput="rTxt()" style="font-size:12px;"><option value="">Nacionalidad...</option>${po}</select>
-          <select id="ppr_${i}_${p}" class="inp" oninput="rTxt()" style="font-size:12px;"><option value="">País de residencia...</option>${po}</select>
-          <input id="pci_${i}_${p}" class="inp" placeholder="Ciudad de residencia" oninput="rTxt()" style="font-size:12px;">
+        const pColor=PAX_COLORS[p%PAX_COLORS.length];
+        const esTitular=p===0;
+        const paxLabel=esTitular?(lang==="Inglés"?"Guest 1 (main)":lang==="Portugués"?"Hóspede 1 (titular)":lang==="Francés"?"Voyageur 1 (titulaire)":lang==="Alemán"?"Gast 1 (Hauptgast)":lang==="Italiano"?"Ospite 1 (titolare)":lang==="中文"?"旅客 1（主）":"Pasajero 1 (titular)")
+          :(lang==="Inglés"?"Guest "+(p+1):lang==="Portugués"?"Hóspede "+(p+1):lang==="Francés"?"Voyageur "+(p+1):lang==="Alemán"?"Gast "+(p+1):lang==="Italiano"?"Ospite "+(p+1):lang==="中文"?"旅客 "+(p+1):"Pasajero "+(p+1));
+        inp+=`<div class="pax-card" style="border-left:4px solid ${pColor};${esTitular?"background:linear-gradient(135deg,rgba(92,61,30,0.03),rgba(200,149,108,0.04));":""}">
+          <div class="pax-header">
+            <span class="pax-num" style="background:${pColor};">${p+1}</span>
+            <span class="pax-label">${paxLabel}</span>
+          </div>
+          <div class="pg4">
+            <input id="pn_${i}_${p}" class="inp" placeholder="Nombre completo" oninput="rTxt()" style="font-size:12px;">
+            <input id="pd_${i}_${p}" class="inp" placeholder="RUT o N° pasaporte" oninput="rTxt()" style="font-size:12px;">
+            <select id="pt_${i}_${p}" class="inp" oninput="rTxt()" style="font-size:12px;"><option value="RUT">RUT (chileno)</option><option value="Pasaporte">Pasaporte</option></select>
+            <select id="pna_${i}_${p}" class="inp" oninput="rTxt()" style="font-size:12px;"><option value="">Nacionalidad...</option>${po}</select>
+            <select id="ppr_${i}_${p}" class="inp" oninput="rTxt()" style="font-size:12px;"><option value="">País de residencia...</option>${po}</select>
+            <input id="pci_${i}_${p}" class="inp" placeholder="Ciudad de residencia" oninput="rTxt()" style="font-size:12px;">
+          </div>
         </div>`;
       }
       const dh=it.huespedes>1?t.distrib:"";
-      return `<div class="pi"><div class="ptt">${t.hab} ${i+1} — ${hn(it.tipoIdx)}${it.roomNum?" · Hab."+it.roomNum:""}</div>${inp}${dh?`<input id="di_${i}" class="dii" placeholder="${dh}" oninput="rTxt()" style="margin-top:4px;">`:`<input id="di_${i}" style="display:none">`}</div>`;
+      return `<div class="pi"><div class="ptt">${t.hab} ${i+1} — ${hn(it.tipoIdx)}${it.roomNum?" · Hab."+it.roomNum:""}</div>${inp}${dh?`<input id="di_${i}" class="dii" placeholder="${dh}" oninput="rTxt()" style="margin-top:6px;">`:`<input id="di_${i}" style="display:none">`}</div>`;
     }).join("");
   }
+  // ── Restore passenger data after DOM rebuild ──
+  _restorePaxInputs(savedPax);
   updateDateDisplay();
   rTxt();
 }
@@ -2945,18 +3373,24 @@ function guardar(){
   if(!i||!o){toast("Por favor ingresa las fechas de check-in y check-out.","warn");return;}
   if(i>=o){toast("La fecha de check-out debe ser posterior al check-in.","warn");return;}
   if(!gN()){toast("Por favor ingresa el nombre del pasajero o grupo.","warn");return;}
+  // Recalcular noches desde las fechas reales (no depender del global que puede estar stale)
+  const nochesCalc=Math.round((parseLocalDate(o)-parseLocalDate(i))/86400000);
+  if(nochesCalc<=0){toast("Fechas inválidas — check-out debe ser posterior al check-in.","warn");return;}
   const pax=getPax();
   const totalH=items.reduce((a,it)=>a+it.huespedes,0);
   let reservas=getReservas();
   let registros=getReg();
   const rid="R"+Date.now();
-  // Bug 20 fix: also check Booking reservas for collision, not only hv_reservas
+  // Verificar colisión de habitaciones (incluye Booking)
   const todasParaDup=[...reservas,...getBookingReservas().filter(r=>!r.cancelada)];
   const dupRooms=pax.filter(h=>h.roomNum&&todasParaDup.some(r=>r.roomNum===h.roomNum&&r.checkin<o&&r.checkout>i));
-  if(dupRooms.length) toast("⚠️ Hab. "+dupRooms.map(h=>h.roomNum).join(", ")+" ya tiene reserva en esas fechas","warn",5000);
+  if(dupRooms.length){
+    toast("⚠️ Hab. "+dupRooms.map(h=>h.roomNum).join(", ")+" ya tiene reserva en esas fechas. Revisa antes de guardar.","err",5000);
+    return; // Bloquear guardado — doble booking no permitido
+  }
   pax.forEach((h,hIdx)=>{
     if(h.roomNum){
-      reservas.push({id:rid+h.roomNum,roomNum:h.roomNum,tipoIdx:h.tipoIdx,checkin:i,checkout:o,nombre:gN()||h.pl.map(p=>p.nombre).filter(Boolean).join(", ")||"Huésped",noches,pax:items[hIdx]?items[hIdx].huespedes:h.pl.length,docType:docType||"boleta",nDocumento:getNDocumento(),telefono:getTelContacto()||"",medio:getMedio()||"",patente:getPatente()||"",precio:String(items[hIdx]?subtotalHab(items[hIdx]):subtotalHab({tipoIdx:h.tipoIdx,huespedes:h.pl.length}))});
+      reservas.push({id:rid+h.roomNum,roomNum:h.roomNum,tipoIdx:h.tipoIdx,checkin:i,checkout:o,nombre:gN()||h.pl.map(p=>p.nombre).filter(Boolean).join(", ")||"Huésped",noches:nochesCalc,pax:items[hIdx]?items[hIdx].huespedes:h.pl.length,docType:docType||"boleta",nDocumento:getNDocumento(),telefono:getTelContacto()||"",medio:getMedio()||"",patente:getPatente()||"",precio:String(items[hIdx]?subtotalHab(items[hIdx]):subtotalHab({tipoIdx:h.tipoIdx,huespedes:h.pl.length}))});
     }
     if(h.roomNum) h.pl.forEach(p=>{
       if(p.nombre||p.doc){
@@ -2971,7 +3405,7 @@ function guardar(){
           ciudad:p.ciudad||"—",
           checkin:i,
           checkout:o,
-          noches,
+          noches:nochesCalc,
           habitacion:hnEs(h.tipoIdx)+(h.roomNum?" (Hab."+h.roomNum+")":""),
           telefono:getTelContacto()||"—",
           medio:getMedio()||"—",
@@ -3062,12 +3496,16 @@ function rDisp(){
   const tipoLbl={familiar:"Fam",triple:"Tri",matrimonial:"Mat",flex:"Flex"};
 
   // Auto-detectar habitaciones que necesitan aseo:
-  // checkout === HOY y no están marcadas como limpias
+  // checkout <= HOY (hoy o días pasados) y no están ya marcadas ni limpias hoy
+  // Esto cubre el caso donde la app no se abrió el día del checkout.
   const bkRes=getBookingReservas();
   const todasRes=[...reservas,...bkRes];
+  const limpiasHoyArr=getLimpiasHoy();
   todasRes.forEach(r=>{
-    if(r.checkout===HOY && r.roomNum && !r.cancelada && !sucias.includes(r.roomNum)){
-      marcarSucia(r.roomNum, false); // false = no redibujar aún
+    if(r.checkout<=HOY && r.roomNum && !r.cancelada && !sucias.includes(r.roomNum) && !limpiasHoyArr.includes(r.roomNum)){
+      // Verificar que la habitación NO tenga un huésped actual (checkout pasado pero hay otra reserva activa)
+      const ocupadaAhora=todasRes.some(o=>o.roomNum===r.roomNum&&o.checkin<=HOY&&o.checkout>HOY&&!o.cancelada);
+      if(!ocupadaAhora) marcarSucia(r.roomNum, false);
     }
   });
 
@@ -3130,6 +3568,27 @@ function rDisp(){
 function verR(id){
   const r=getReservas().find(x=>x.id===id);
   if(!r){ toast("Reserva no encontrada — puede haber sido eliminada","warn"); rDisp(); return; }
+  // Guest mode: only show basic info, no delete
+  if(!esAdmin){
+    const modalId="verR_"+id;
+    const existing=document.getElementById(modalId); if(existing) existing.remove();
+    const modal=document.createElement("div");
+    modal.id=modalId;
+    modal.style.cssText="position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .18s ease;";
+    const rc=roomColor(r.roomNum);
+    modal.innerHTML=`<div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:${rc.bg};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:${rc.fg};">${r.roomNum||"?"}</div>
+        <div><div style="font-size:14px;font-weight:800;">Hab. ${r.roomNum||"?"}</div>
+        <div style="font-size:11px;color:#666;">${fmtFC(r.checkin)} → ${fmtFC(r.checkout)} · ${r.noches||"?"} noche${(r.noches||1)!==1?"s":""}</div></div>
+      </div>
+      <div style="font-size:12px;color:#888;text-align:center;padding:8px;">🔒 Inicia sesión como administrador para ver los detalles completos</div>
+      <button onclick="document.getElementById('${modalId}').remove()" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:10px;background:#fff;cursor:pointer;font-size:13px;font-family:inherit;color:#555;">Cerrar</button>
+    </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener("click",e=>{if(e.target===modal)modal.remove();});
+    return;
+  }
   const doc=r.docType||"boleta";
   const docIco={"boleta":"🧾","factura":"📄","exento":"✈️"}[doc]||"🧾";
   const esCuaderno=r.id&&r.id.startsWith("CUAD_");
@@ -3181,6 +3640,27 @@ function verR(id){
 function verBK(id){
   const bk=getBookingReservas().find(x=>x.id===id);
   if(!bk){ toast("Reserva no encontrada — puede haber sido eliminada","warn"); rDisp(); return; }
+  // Guest mode: only show basic room info
+  if(!esAdmin){
+    const modalId="verBK_"+id;
+    const existing=document.getElementById(modalId); if(existing) existing.remove();
+    const modal=document.createElement("div");
+    modal.id=modalId;
+    modal.style.cssText="position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .18s ease;";
+    const rc=roomColor(bk.roomNum);
+    modal.innerHTML=`<div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:${rc.bg};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:${rc.fg};">${bk.roomNum||"?"}</div>
+        <div><div style="font-size:14px;font-weight:800;">Hab. ${bk.roomNum||"?"} — Ocupada</div>
+        <div style="font-size:11px;color:#666;">${fmtFC(bk.checkin)} → ${fmtFC(bk.checkout)} · ${bk.noches} noche${bk.noches!==1?"s":""}</div></div>
+      </div>
+      <div style="font-size:12px;color:#888;text-align:center;padding:8px;">🔒 Inicia sesión como administrador para ver los detalles completos</div>
+      <button onclick="document.getElementById('${modalId}').remove()" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:10px;background:#fff;cursor:pointer;font-size:13px;font-family:inherit;color:#555;">Cerrar</button>
+    </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener("click",e=>{if(e.target===modal)modal.remove();});
+    return;
+  }
   const modalId="verBK_"+id;
   // Remove existing instance if open
   const existing=document.getElementById(modalId);
@@ -3515,21 +3995,19 @@ function renderBKList(reservas){
       <td>${r.roomNum?`<strong style="color:#003580;">Hab. ${r.roomNum}</strong>`:`<span style="color:#999;">—</span>`}</td>
       <td>${r.pax?r.pax+" pax":`<span style="color:#b45309;">N/D</span>`}</td>
       <td style="font-size:11px;">${precioStr}</td>
-      <td onclick="event.stopPropagation()">${esCanc?"":`<button class="bk-edit-btn" onclick="editarBK(${i})">✏️</button>`}</td>
+      <td onclick="event.stopPropagation()">${esCanc?"":`<button class="bk-edit-btn" onclick="editarBK('${r.id}')">✏️</button>`}</td>
     </tr>`;
   }).join("");
 }
 
-function editarBK(idx){
+function editarBK(rid){
   const bkRes=getBookingReservas();
-  const r=bkRes[idx];
+  const r=bkRes.find(x=>x.id===rid);
   if(!r) return;
-  const rid=r.id;
   showInput("Hab. para "+r.nombre+" ("+fmtFC(r.checkin)+" → "+fmtFC(r.checkout)+")", r.roomNum||"", function(habVal){
     if(!habVal) return;
     const habNum=parseInt(habVal);
     if(isNaN(habNum)||!ALL_ROOMS.includes(habNum)){ toast("Número de habitación inválido. Disponibles: "+ALL_ROOMS.join(", "),"warn"); return; }
-    // Bug 11 fix: check collision before assigning (excluding the entry being edited)
     const todasSinEsta=[...getReservas(),...getBookingReservas().filter(x=>x.id!==rid&&!x.cancelada)];
     const colision=todasSinEsta.some(x=>x.roomNum===habNum&&x.checkin<r.checkout&&x.checkout>r.checkin);
     if(colision){ toast("⚠️ Hab. "+habNum+" ya tiene una reserva en esas fechas. Elige otra.","err",5000); return; }
@@ -3616,7 +4094,7 @@ function rTabla(){
     <div class="sc"><div class="sn">${nc}</div><div class="sl">Nacionalidades</div></div>
     <div class="sc"><div class="sn">${resTotal}</div><div class="sl">Reservas únicas</div></div>`;
   const tb=document.getElementById("tBody");
-  if(!f.length){tb.innerHTML=`<tr><td colspan="13" class="es">No hay registros aún.<br>Guarda una reserva confirmada desde Cotización.</td></tr>`;return;}
+  if(!f.length){tb.innerHTML=`<tr><td colspan="14" class="es">No hay registros aún.<br>Guarda una reserva confirmada desde Cotización.</td></tr>`;return;}
   tb.innerHTML=f.map((r,i)=>`<tr>
     <td>${i+1}</td>
     <td><strong>${esc(r.nombre)}</strong><br><span style="font-size:10px;color:var(--t3);">${esc(r.doc)} (${esc(r.tipodoc)})</span>${r.tipodoc==="RUT"&&r.doc&&r.doc!=="—"&&!validarRUT(r.doc)?'<span style="color:#b91c1c;font-size:9px;"> ⚠ RUT inválido</span>':""}</td>
@@ -3624,6 +4102,7 @@ function rTabla(){
     <td>${esc(r.residencia)||"—"}</td>
     <td>${esc(r.ciudad)||"—"}</td>
     <td style="white-space:nowrap;">${fmtFC(r.checkin)}</td>
+    <td style="white-space:nowrap;">${fmtFC(r.checkout)||"—"}</td>
     <td>${r.noches}</td>
     <td>${r.totalPax||"—"}</td>
     <td>${esc(r.telefono)||"—"}</td>
@@ -3732,7 +4211,7 @@ let finTab="res";
 
 function setFinTab(t){
   finTab=t;
-  ["res","dia","sem","mes"].forEach(x=>{
+  ["res","dia","sem","mes","anio"].forEach(x=>{
     const btn=document.getElementById("ft"+x.charAt(0).toUpperCase()+x.slice(1));
     if(btn) btn.classList.toggle("on",x===t);
   });
@@ -3782,6 +4261,10 @@ function calcIVAReserva(montoTotal, tipo){
 }
 
 function rFin(){
+  // Clean up year-over-year variation div if switching away from "Por año"
+  const oldAnioVar=document.getElementById("finAnioVar");
+  if(oldAnioVar && finTab!=="anio") oldAnioVar.remove();
+
   const todas=getAllReservas();
   const resTab=document.getElementById("finResumenTab");
   const kpisWrap=document.getElementById("finKpisWrap");
@@ -3807,6 +4290,7 @@ function rFin(){
   if(finTab==="res") renderFinResumen(todas);
   else if(finTab==="dia") renderFinDia(todas);
   else if(finTab==="sem") renderFinSem(todas);
+  else if(finTab==="anio") renderFinAnio(todas);
   else renderFinMes(todas);
   // Comparativa mes a mes siempre visible
   var compEl=document.getElementById("finComparativa");
@@ -3822,14 +4306,59 @@ function rFin(){
 
 // ─── RESUMEN TRIBUTARIO ──────────────────────────────────────
 function renderFinResumen(todas){
-  document.getElementById("finSelector").innerHTML="";
+  // ── Filtro por rango de fechas (para declaración IVA mensual SII) ──
+  const hoy=hoyISO();
+  const mesActualStr=hoy.slice(0,7);
+  const primerDiaMes=mesActualStr+"-01";
+  const ultimoDiaMes=mesActualStr+"-"+String(new Date(parseInt(mesActualStr.slice(0,4)),parseInt(mesActualStr.slice(5,7)),0).getDate()).padStart(2,"0");
 
-  // Calcular totales por tipo de documento
+  // Leer valores actuales o usar mes en curso por defecto
+  const prevDesde=document.getElementById("finIvaDesde")?.value||primerDiaMes;
+  const prevHasta=document.getElementById("finIvaHasta")?.value||ultimoDiaMes;
+
+  document.getElementById("finSelector").innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;padding:10px 14px;background:var(--s);border:.5px solid var(--b);border-radius:var(--rl);">
+      <span style="font-size:11px;font-weight:700;color:var(--t2);">📅 Período tributario:</span>
+      <input type="date" id="finIvaDesde" value="${prevDesde}" onchange="rFin()" style="padding:5px 8px;font-size:12px;border:1px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);font-family:inherit;">
+      <span style="font-size:11px;color:var(--t3);">→</span>
+      <input type="date" id="finIvaHasta" value="${prevHasta}" onchange="rFin()" style="padding:5px 8px;font-size:12px;border:1px solid var(--b2);border-radius:var(--r);background:var(--s);color:var(--t);font-family:inherit;">
+      <button onclick="setFinIvaMes(-1)" style="padding:4px 10px;font-size:11px;border:1px solid var(--b2);border-radius:var(--r);background:var(--s);cursor:pointer;color:var(--t2);font-family:inherit;">◀ Mes ant.</button>
+      <button onclick="setFinIvaMes(0)" style="padding:4px 10px;font-size:11px;border:1px solid var(--cam);border-radius:var(--r);background:#fdf0e6;cursor:pointer;color:var(--mar);font-weight:600;font-family:inherit;">Mes actual</button>
+      <button onclick="setFinIvaMes(1)" style="padding:4px 10px;font-size:11px;border:1px solid var(--b2);border-radius:var(--r);background:var(--s);cursor:pointer;color:var(--t2);font-family:inherit;">Mes sig. ▶</button>
+      <button onclick="setFinIvaAnio()" style="padding:4px 10px;font-size:11px;border:1px solid var(--b2);border-radius:var(--r);background:var(--s);cursor:pointer;color:var(--t2);font-family:inherit;">📆 Año completo</button>
+    </div>`;
+
+  const desde=document.getElementById("finIvaDesde")?.value||prevDesde;
+  const hasta=document.getElementById("finIvaHasta")?.value||prevHasta;
+
+  // Filtrar reservas: incluir si alguna noche de la estadía cae dentro del rango
+  const filtradas=todas.filter(r=>{
+    return r.checkin<addDays(hasta,1) && r.checkout>desde;
+  });
+
+  // Período legible
+  const periodoLabel=(function(){
+    const d1=parseLocalDate(desde), d2=parseLocalDate(hasta);
+    const f=d=>d.toLocaleDateString("es-CL",{day:"numeric",month:"short",year:"numeric"});
+    return f(d1)+" → "+f(d2);
+  })();
+
+  // Calcular totales por tipo de documento (solo noches dentro del rango)
   const grupos={boleta:{reservas:0,bruto:0,neto:0,iva:0},factura:{reservas:0,bruto:0,neto:0,iva:0},exento:{reservas:0,bruto:0,neto:0,iva:0}};
-  let totalBruto=0,totalNeto=0,totalIVA=0;
+  let totalBruto=0;
+  const desdeDate=parseLocalDate(desde), hastaDate=parseLocalDate(addDays(hasta,1));
 
-  todas.forEach(r=>{
-    const monto=getPrecioReserva(r);
+  filtradas.forEach(r=>{
+    const precioTotal=getPrecioReserva(r);
+    const nochesTotal=nochesReales(r);
+    const pNoche=nochesTotal>0?precioTotal/nochesTotal:0;
+    // Contar solo noches dentro del rango seleccionado
+    let nochesEnRango=0;
+    for(let d=parseLocalDate(r.checkin);d<parseLocalDate(r.checkout);d.setDate(d.getDate()+1)){
+      if(d>=desdeDate && d<hastaDate) nochesEnRango++;
+    }
+    const monto=Math.round(pNoche*nochesEnRango);
+    if(monto<=0) return;
     const tipo=r.docType||"boleta";
     const g=grupos[tipo]||grupos.boleta;
     const {bruto,neto,iva}=calcIVAReserva(monto,tipo);
@@ -3838,11 +4367,14 @@ function renderFinResumen(todas){
     g.neto+=neto;
     g.iva+=iva;
     totalBruto+=bruto;
-    totalNeto+=neto;
-    totalIVA+=iva;
   });
 
-  const totalRes=todas.length;
+  // Para SII: base imponible = neto de boleta + factura (NO incluir exento)
+  const baseImponible=grupos.boleta.neto+grupos.factura.neto;
+  const totalIVA=grupos.boleta.iva+grupos.factura.iva;
+  const totalExento=grupos.exento.bruto;
+  const totalRes=grupos.boleta.reservas+grupos.factura.reservas+grupos.exento.reservas;
+
   const pBol=totalBruto?Math.round(grupos.boleta.bruto/totalBruto*100):0;
   const pFac=totalBruto?Math.round(grupos.factura.bruto/totalBruto*100):0;
   const pExe=totalBruto?Math.round(grupos.exento.bruto/totalBruto*100):0;
@@ -3857,10 +4389,10 @@ function renderFinResumen(todas){
   ["boleta","factura","exento"].forEach(tipo=>{
     const g=grupos[tipo];
     const c=docConf[tipo];
-    if(g.reservas===0&&tipo!=="boleta") return; // omit empty non-boleta
+    if(g.reservas===0&&tipo!=="boleta") return;
     const pct=totalBruto?Math.round(g.bruto/totalBruto*100):0;
     const ivaRow=tipo==="exento"
-      ? `<div class="fdc-row"><span class="fdr-k">IVA</span><span class="fdr-v" style="color:#7c3aed;">Exento</span></div>`
+      ? `<div class="fdc-row"><span class="fdr-k">IVA</span><span class="fdr-v" style="color:#7c3aed;">Exento (Art.12 D.L.825)</span></div>`
       : `<div class="fdc-row"><span class="fdr-k">Neto</span><span class="fdr-v">${fmt2(g.neto)}</span></div>
          <div class="fdc-row"><span class="fdr-k">IVA 19%</span><span class="fdr-v" style="color:#b45309;">${fmt2(g.iva)}</span></div>`;
     cardsHtml+=`
@@ -3880,7 +4412,7 @@ function renderFinResumen(todas){
   // Barra de composición
   const barHtml=`
     <div style="background:var(--s);border:.5px solid var(--b);border-radius:var(--rl);padding:16px 16px 14px;margin-bottom:14px;">
-      <div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Composición de ingresos</div>
+      <div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">Composición de ingresos — ${periodoLabel}</div>
       <div class="fin-bar-stack">
         <div class="fbs-boleta" style="width:${pBol}%;" title="Boleta ${pBol}%"></div>
         <div class="fbs-factura" style="width:${pFac}%;" title="Factura ${pFac}%"></div>
@@ -3893,25 +4425,27 @@ function renderFinResumen(todas){
       </div>
     </div>`;
 
-  // Card total
+  // Card total con etiquetas SII correctas
   const totalCard=`
     <div class="fin-doc-card total-card">
       <div class="fdc-head">
         <div class="fdc-icon" style="background:rgba(255,255,255,0.2);">💰</div>
-        <div><div class="fdc-titulo">Total General</div><div class="fdc-sub">${totalRes} reservas registradas</div></div>
+        <div><div class="fdc-titulo">Resumen Tributario — ${periodoLabel}</div><div class="fdc-sub">${totalRes} reservas en el período</div></div>
       </div>
       <div class="fdc-val">${fmt2(totalBruto)}</div>
       <div class="fdc-rows">
-        <div class="fdc-row"><span class="fdr-k">Total neto (afecto IVA)</span><span class="fdr-v">${fmt2(totalNeto)}</span></div>
-        <div class="fdc-row"><span class="fdr-k">IVA 19% a enterar</span><span class="fdr-v">${fmt2(totalIVA)}</span></div>
-        <div class="fdc-row"><span class="fdr-k">Monto exento IVA</span><span class="fdr-v">${fmt2(grupos.exento.bruto)}</span></div>
+        <div class="fdc-row"><span class="fdr-k">Base imponible (neto afecto)</span><span class="fdr-v">${fmt2(baseImponible)}</span></div>
+        <div class="fdc-row"><span class="fdr-k">IVA 19% a declarar</span><span class="fdr-v" style="color:#b45309;font-weight:700;">${fmt2(totalIVA)}</span></div>
+        <div class="fdc-row"><span class="fdr-k">Ventas exentas (turistas)</span><span class="fdr-v" style="color:#7c3aed;">${fmt2(totalExento)}</span></div>
+        <div class="fdc-row"><span class="fdr-k">Ingresos totales del período</span><span class="fdr-v" style="font-weight:700;">${fmt2(totalBruto)}</span></div>
       </div>
     </div>`;
 
-  // Tabla detalle por mes con desglose
+  // Tabla detalle por mes con desglose (dentro del rango)
   const meses={};
-  todas.forEach(r=>{
+  filtradas.forEach(r=>{
     for(let d=parseLocalDate(r.checkin);d<parseLocalDate(r.checkout);d.setDate(d.getDate()+1)){
+      if(d<desdeDate || d>=hastaDate) continue; // solo noches dentro del rango
       const mes=isoLocal(d).slice(0,7);
       if(!meses[mes]) meses[mes]={mes,boleta:0,factura:0,exento:0,total:0,habDias:0};
       const pNoche=Math.round(getPrecioReserva(r)/nochesReales(r));
@@ -3944,7 +4478,7 @@ function renderFinResumen(todas){
         </tr>`).join("")}
         </tbody>
         <tfoot><tr>
-          <td><strong>TOTAL ACUMULADO</strong></td>
+          <td><strong>TOTAL PERÍODO</strong></td>
           <td></td>
           <td class="td-neto">${fmt2(grupos.boleta.bruto)}</td>
           <td class="td-neto">${fmt2(grupos.factura.bruto)}</td>
@@ -3955,6 +4489,36 @@ function renderFinResumen(todas){
     </div>`;
 
   document.getElementById("finResumenTab").innerHTML=barHtml+`<div class="fin-resumen-grid">${cardsHtml}${totalCard}</div>`+tableHtml;
+}
+
+// ── Helpers para navegación de período IVA ──
+function setFinIvaMes(offset){
+  const desdeEl=document.getElementById("finIvaDesde");
+  const hastaEl=document.getElementById("finIvaHasta");
+  if(!desdeEl||!hastaEl) return;
+  let d;
+  if(offset===0){
+    d=new Date();
+  } else {
+    const cur=parseLocalDate(desdeEl.value||hoyISO());
+    d=new Date(cur.getFullYear(),cur.getMonth()+offset,1);
+  }
+  const y=d.getFullYear(), m=d.getMonth();
+  const primero=`${y}-${String(m+1).padStart(2,"0")}-01`;
+  const ultimo=`${y}-${String(m+1).padStart(2,"0")}-${String(new Date(y,m+1,0).getDate()).padStart(2,"0")}`;
+  desdeEl.value=primero;
+  hastaEl.value=ultimo;
+  rFin();
+}
+
+function setFinIvaAnio(){
+  const desdeEl=document.getElementById("finIvaDesde");
+  const hastaEl=document.getElementById("finIvaHasta");
+  if(!desdeEl||!hastaEl) return;
+  const y=new Date().getFullYear();
+  desdeEl.value=y+"-01-01";
+  hastaEl.value=y+"-12-31";
+  rFin();
 }
 
 // ─── POR DÍA ────────────────────────────────────────────────
@@ -4163,6 +4727,137 @@ function renderFinMes(todas){
     <td class="td-monto">${fmt2(f.total)}</td>
   </tr>`).join("");
   document.getElementById("finTfoot").innerHTML=`<tr><td colspan="3"><strong>TOTAL ACUMULADO</strong></td><td class="td-neto">${fmt2(totBoleta)}</td><td class="td-neto">${fmt2(totFactura)}</td><td class="td-neto" style="color:#7c3aed;">${fmt2(totExento)}</td><td class="td-monto">${fmt2(total)}</td></tr>`;
+}
+
+// ─── POR AÑO ────────────────────────────────────────────────
+function renderFinAnio(todas){
+  document.getElementById("finSelector").innerHTML="";
+
+  // Agrupar por año — cada noche se asigna al año calendario donde cae
+  const anios={};
+  todas.forEach(r=>{
+    for(let d=parseLocalDate(r.checkin);d<parseLocalDate(r.checkout);d.setDate(d.getDate()+1)){
+      const anio=String(d.getFullYear());
+      if(!anios[anio]) anios[anio]={anio,habDias:0,boleta:0,factura:0,exento:0,total:0,nRes:new Set(),paxTotal:0,meses:new Set()};
+      const pNoche=Math.round(getPrecioReserva(r)/nochesReales(r));
+      const tipo=r.docType||"boleta";
+      anios[anio][tipo]=(anios[anio][tipo]||0)+pNoche;
+      anios[anio].total+=pNoche;
+      anios[anio].habDias++;
+      anios[anio].nRes.add(r.id||r.roomNum+r.checkin);
+      anios[anio].paxTotal=Math.max(anios[anio].paxTotal,(anios[anio].paxTotal||0)); // tracked via nRes
+      anios[anio].meses.add(isoLocal(d).slice(0,7));
+    }
+  });
+
+  const filas=Object.values(anios).sort((a,b)=>a.anio.localeCompare(b.anio));
+  const total=filas.reduce((a,f)=>a+f.total,0);
+  const totBoleta=filas.reduce((a,f)=>a+f.boleta,0);
+  const totFactura=filas.reduce((a,f)=>a+f.factura,0);
+  const totExento=filas.reduce((a,f)=>a+f.exento,0);
+  const totAfecto=totBoleta+totFactura;
+  const totNeto=Math.round(totAfecto/(1+IVA_RATE));
+  const totIVA=totAfecto-totNeto;
+  const totalReservas=filas.reduce((a,f)=>a+f.nRes.size,0);
+  const totalHabDias=filas.reduce((a,f)=>a+f.habDias,0);
+  const mejorAnio=filas.reduce((a,f)=>f.total>a.total?f:a,filas[0]||{total:0,anio:"—"});
+  const maxIng=Math.max(...filas.map(f=>f.total),1);
+
+  // KPIs
+  document.getElementById("finKpis").innerHTML=`
+    <div class="fin-kpi highlight"><div class="val">${fmt2(total)}</div><div class="lbl">Ingresos totales</div></div>
+    <div class="fin-kpi"><div class="val">${fmt2(totNeto)}</div><div class="lbl">Neto afecto IVA</div></div>
+    <div class="fin-kpi"><div class="val">${fmt2(totIVA)}</div><div class="lbl">IVA total</div></div>
+    <div class="fin-kpi"><div class="val">${fmt2(totExento)}</div><div class="lbl">Exento total</div></div>
+    <div class="fin-kpi"><div class="val">${totalReservas}</div><div class="lbl">Reservas totales</div></div>
+    <div class="fin-kpi"><div class="val">${totalHabDias}</div><div class="lbl">Hab-noches totales</div></div>
+    <div class="fin-kpi"><div class="val">${mejorAnio.anio||"—"}</div><div class="lbl">Mejor año</div></div>
+    <div class="fin-kpi"><div class="val">${filas.length}</div><div class="lbl">Años con actividad</div></div>`;
+
+  // Barras por año
+  document.getElementById("finBars").innerHTML=filas.map(f=>{
+    return `<div class="fin-bar-row">
+      <span class="fin-bar-lbl" style="min-width:45px;font-weight:700;">${f.anio}</span>
+      <div class="fin-bar-outer"><div class="fin-bar-stack" style="height:100%;border-radius:999px;overflow:hidden;">
+        <div class="fbs-boleta" style="width:${Math.round(f.boleta/maxIng*100)}%;height:100%;flex-shrink:0;"></div>
+        <div class="fbs-factura" style="width:${Math.round(f.factura/maxIng*100)}%;height:100%;flex-shrink:0;"></div>
+        <div class="fbs-exento" style="width:${Math.round(f.exento/maxIng*100)}%;height:100%;flex-shrink:0;"></div>
+      </div></div>
+      <span class="fin-bar-val">${fmt2(f.total)}</span>
+    </div>`;
+  }).join("");
+
+  // Tabla detalle por año
+  document.getElementById("finThead").innerHTML=`<tr>
+    <th>Año</th>
+    <th class="td-ocup">Meses activos</th>
+    <th class="td-ocup">Reservas</th>
+    <th class="td-ocup">Hab-noches</th>
+    <th style="text-align:right"><span class="fin-badge boleta">Boleta</span></th>
+    <th style="text-align:right"><span class="fin-badge factura">Factura</span></th>
+    <th style="text-align:right"><span class="fin-badge exento">Exento</span></th>
+    <th class="td-monto">Neto afecto</th>
+    <th style="text-align:right;color:#b45309;">IVA 19%</th>
+    <th class="td-monto">Total año</th>
+  </tr>`;
+
+  document.getElementById("finTbody").innerHTML=filas.map(f=>{
+    const afecto=f.boleta+f.factura;
+    const neto=Math.round(afecto/(1+IVA_RATE));
+    const iva=afecto-neto;
+    const promMes=f.meses.size>0?Math.round(f.total/f.meses.size):0;
+    const ocupProm=f.meses.size>0?Math.round(f.habDias/(f.meses.size*30)/ALL_ROOMS.length*100):0;
+    return `<tr>
+      <td><strong style="font-size:14px;">${f.anio}</strong><br><span style="font-size:10px;color:var(--t3);">Prom. ${fmt2(promMes)}/mes · ~${ocupProm}% ocup.</span></td>
+      <td class="td-ocup">${f.meses.size}</td>
+      <td class="td-ocup">${f.nRes.size}</td>
+      <td class="td-ocup">${f.habDias}</td>
+      <td class="td-neto">${f.boleta?fmt2(f.boleta):"—"}</td>
+      <td class="td-neto">${f.factura?fmt2(f.factura):"—"}</td>
+      <td class="td-neto" style="color:#7c3aed;">${f.exento?fmt2(f.exento):"—"}</td>
+      <td class="td-neto">${fmt2(neto)}</td>
+      <td style="text-align:right;color:#b45309;font-weight:600;">${fmt2(iva)}</td>
+      <td class="td-monto" style="font-size:14px;">${fmt2(f.total)}</td>
+    </tr>`;
+  }).join("");
+
+  // Variación año a año
+  let varHtml="";
+  if(filas.length>=2){
+    varHtml=filas.slice(1).map((f,i)=>{
+      const prev=filas[i];
+      const diff=f.total-prev.total;
+      const pct=prev.total>0?((diff/prev.total)*100):0;
+      const up=diff>=0;
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--b);font-size:12px;">
+        <span style="font-weight:700;min-width:90px;">${prev.anio} → ${f.anio}</span>
+        <span style="color:${up?"#0f6e56":"#b91c1c"};font-weight:700;">${up?"▲":"▼"} ${Math.abs(pct).toFixed(1)}%</span>
+        <span style="color:${up?"#0f6e56":"#b91c1c"};font-weight:600;">(${up?"+":""}${fmt2(diff)})</span>
+      </div>`;
+    }).join("");
+    varHtml=`<div style="margin-top:4px;font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">📈 Variación interanual</div>`+varHtml;
+  }
+
+  document.getElementById("finTfoot").innerHTML=`<tr>
+    <td colspan="4"><strong>TOTAL HISTÓRICO</strong></td>
+    <td class="td-neto">${fmt2(totBoleta)}</td>
+    <td class="td-neto">${fmt2(totFactura)}</td>
+    <td class="td-neto" style="color:#7c3aed;">${fmt2(totExento)}</td>
+    <td class="td-neto">${fmt2(totNeto)}</td>
+    <td style="text-align:right;color:#b45309;font-weight:700;">${fmt2(totIVA)}</td>
+    <td class="td-monto" style="font-size:15px;">${fmt2(total)}</td>
+  </tr>`;
+
+  // Append year-over-year variation below the table
+  const existingVar=document.getElementById("finAnioVar");
+  if(existingVar) existingVar.remove();
+  if(varHtml){
+    const varDiv=document.createElement("div");
+    varDiv.id="finAnioVar";
+    varDiv.style.cssText="background:var(--s);border:1px solid var(--b);border-radius:var(--rl);padding:14px 16px;margin-top:12px;box-shadow:var(--sh-sm);";
+    varDiv.innerHTML=varHtml;
+    document.querySelector("#pg-fin .fin-tabla-wrap")?.after(varDiv);
+  }
 }
 
 // ── Custom DD/MM/AAAA date input handler ──────────────────────
