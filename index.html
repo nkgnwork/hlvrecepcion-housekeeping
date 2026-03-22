@@ -510,7 +510,9 @@ function exportarBackup(){
         sucias: getSucias(),
         papelera: getPapelera(),
         historialLimpieza: getHistorialLimpieza(),
-        limpiasHoy: (function(){ try{ return JSON.parse(localStorage.getItem("hv_limpias_hoy")||"{}"); }catch(e){ return {}; } })()
+        limpiasHoy: (function(){ try{ return JSON.parse(localStorage.getItem("hv_limpias_hoy")||"{}"); }catch(e){ return {}; } })(),
+        proactLog: (function(){ try{ return JSON.parse(localStorage.getItem("hv_proact_log")||"[]"); }catch(e){ return []; } })(),
+        proactDisclaimer: (function(){ try{ return JSON.parse(localStorage.getItem("hv_proact_disclaimer")||"null"); }catch(e){ return null; } })()
       }
     };
     var json = JSON.stringify(backup, null, 2);
@@ -547,6 +549,8 @@ function importarBackup(input){
           if(backup.datos.sucias)            localStorage.setItem("hv_sucias",            JSON.stringify(backup.datos.sucias));
           if(backup.datos.papelera)          localStorage.setItem("hv_papelera",          JSON.stringify(backup.datos.papelera));
           if(backup.datos.historialLimpieza) localStorage.setItem("hv_historial_limpieza",JSON.stringify(backup.datos.historialLimpieza));
+          if(backup.datos.proactLog) localStorage.setItem("hv_proact_log",JSON.stringify(backup.datos.proactLog));
+          if(backup.datos.proactDisclaimer) localStorage.setItem("hv_proact_disclaimer",JSON.stringify(backup.datos.proactDisclaimer));
           // Bug 18 fix: never restore hv_limpias_hoy from backup — it is date-scoped
           // and restoring a stale date would immediately invalidate today's cleaning state.
           // getLimpiasHoy() already returns [] when the stored date != today, so omitting
@@ -1460,7 +1464,9 @@ table.reg tr:hover td{background:rgba(200,149,108,0.06);}
 .hk-stat{background:rgba(255,255,255,0.12);backdrop-filter:blur(6px);border-radius:12px;padding:12px 10px;text-align:center;border:1px solid rgba(255,255,255,0.15);}
 .hk-stat .hk-sv{font-size:26px;font-weight:800;color:#fff;line-height:1;}
 .hk-stat .hk-sl{font-size:10px;color:rgba(255,255,255,0.7);margin-top:3px;text-transform:uppercase;letter-spacing:0.05em;}
+.hk-stat.dirty{background:linear-gradient(135deg,rgba(255,128,128,0.15),rgba(255,80,80,0.08));border-color:rgba(255,128,128,0.25);}
 .hk-stat.dirty .hk-sv{color:#ff8080;}
+.hk-stat.clean{background:linear-gradient(135deg,rgba(128,255,176,0.12),rgba(80,255,128,0.06));border-color:rgba(128,255,176,0.2);}
 .hk-stat.clean .hk-sv{color:#80ffb0;}
 .hk-section{padding:6px 14px 4px;}
 .hk-section-title{font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
@@ -1502,6 +1508,57 @@ table.reg tr:hover td{background:rgba(200,149,108,0.06);}
 .hk-supply-item.checked .hk-supply-check{background:#1a5c2e;border-color:#1a5c2e;}
 .hk-supply-label{font-size:12px;font-weight:600;color:#444;line-height:1.2;}
 .hk-supply-item.checked .hk-supply-label{color:#1a5c2e;}
+
+
+/* ═══ PROACTIVIDAD HOUSEKEEPING ═══ */
+.hk-proact-section{padding:6px 14px 4px;margin-top:14px;}
+.hk-proact-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.hk-proact-fab{background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;border:none;border-radius:14px;padding:12px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(217,119,6,0.4);display:flex;align-items:center;gap:8px;transition:transform 0.15s,box-shadow 0.15s;}
+.hk-proact-fab:active{transform:scale(0.96);}
+.hk-proact-fab .fab-ico{font-size:18px;}
+.hk-proact-list{display:flex;flex-direction:column;gap:9px;}
+.hk-proact-card{background:rgba(255,248,230,0.97);border-radius:16px;padding:14px 16px;box-shadow:0 3px 14px rgba(0,0,0,0.15);border:1.5px solid rgba(217,119,6,0.2);display:flex;align-items:center;gap:12px;transition:opacity 0.3s,transform 0.3s;}
+.hk-proact-card.done{background:rgba(200,255,220,0.92);border-color:rgba(26,92,46,0.3);opacity:0.7;}
+.hk-proact-card .pc-ico{font-size:24px;flex-shrink:0;}
+.hk-proact-card .pc-info{flex:1;}
+.hk-proact-card .pc-titulo{font-size:13px;font-weight:700;color:#92400e;line-height:1.2;}
+.hk-proact-card.done .pc-titulo{color:#1a5c2e;}
+.hk-proact-card .pc-desc{font-size:11px;color:#78716c;margin-top:2px;line-height:1.3;}
+.hk-proact-card .pc-pts{font-size:11px;font-weight:800;color:#d97706;background:rgba(217,119,6,0.12);border-radius:6px;padding:3px 8px;white-space:nowrap;}
+.hk-proact-card.done .pc-pts{color:#1a5c2e;background:rgba(26,92,46,0.12);}
+.hk-proact-mark{padding:10px 14px;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 2px 8px rgba(217,119,6,0.35);transition:transform 0.1s;}
+.hk-proact-mark:active{transform:scale(0.95);}
+.hk-proact-mark.done{background:linear-gradient(135deg,#555,#888);box-shadow:none;cursor:not-allowed;}
+.hk-proact-score{background:rgba(255,255,255,0.15);backdrop-filter:blur(6px);border-radius:12px;padding:12px 14px;margin:10px 14px 0;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:space-between;}
+.hk-proact-score .ps-pts{font-size:22px;font-weight:800;color:#f59e0b;line-height:1;}
+.hk-proact-score .ps-lbl{font-size:10px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;}
+.hk-proact-score .ps-note{font-size:10px;color:rgba(255,255,255,0.5);text-align:right;max-width:55%;line-height:1.3;}
+.hk-proact-empty{text-align:center;padding:24px 16px;background:rgba(255,255,255,0.08);border-radius:14px;margin-top:6px;}
+.hk-proact-empty .pe-ico{font-size:36px;margin-bottom:6px;}
+.hk-proact-empty .pe-txt{font-size:13px;color:rgba(255,255,255,0.8);font-weight:600;}
+.hk-proact-empty .pe-sub{font-size:11px;color:rgba(255,255,255,0.5);margin-top:3px;}
+
+/* ═══ DISCLAIMER MODAL ═══ */
+.hk-disclaimer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:16px;}
+.hk-disclaimer-overlay.active{display:flex;}
+.hk-disclaimer-box{background:#fff;border-radius:20px;max-width:420px;width:100%;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.4);animation:discSlide 0.35s ease-out;}
+@keyframes discSlide{from{transform:translateY(40px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.hk-disc-header{background:linear-gradient(135deg,#92400e,#d97706);color:#fff;padding:20px 22px;text-align:center;}
+.hk-disc-header .dh-ico{font-size:40px;margin-bottom:6px;}
+.hk-disc-header .dh-titulo{font-size:17px;font-weight:800;margin-bottom:4px;}
+.hk-disc-header .dh-sub{font-size:12px;opacity:0.85;line-height:1.4;}
+.hk-disc-body{padding:20px 22px;}
+.hk-disc-item{display:flex;gap:10px;margin-bottom:14px;align-items:flex-start;}
+.hk-disc-item .di-ico{font-size:20px;flex-shrink:0;margin-top:1px;}
+.hk-disc-item .di-txt{font-size:13px;color:#44403c;line-height:1.45;}
+.hk-disc-item .di-txt strong{color:#92400e;font-weight:700;}
+.hk-disc-check{display:flex;align-items:center;gap:10px;margin:18px 0 16px;padding:12px 14px;background:#fef3c7;border-radius:10px;cursor:pointer;user-select:none;border:1.5px solid #fbbf24;}
+.hk-disc-check input{width:18px;height:18px;accent-color:#d97706;cursor:pointer;}
+.hk-disc-check label{font-size:12px;font-weight:700;color:#92400e;cursor:pointer;}
+.hk-disc-accept{width:100%;padding:14px;background:linear-gradient(135deg,#1a5c2e,#2d9e5e);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:opacity 0.2s;}
+.hk-disc-accept:disabled{opacity:0.35;cursor:not-allowed;}
+.hk-disc-footer{text-align:center;padding:0 22px 18px;font-size:10px;color:#a8a29e;line-height:1.4;}
+
 
 /* ═══ LOGIN HOUSEKEEPING BUTTON ═══ */
 .ls-hk{width:100%;padding:9px;background:linear-gradient(135deg,#1a5c2e,#2d9e5e);color:#fff;border:none;border-radius:var(--r);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:4px;}
@@ -1775,6 +1832,130 @@ button:active:not(:disabled){transform:scale(.97);}
 .pg.on .card:nth-child(3){animation-delay:.08s;}
 .pg.on .card:nth-child(4){animation-delay:.12s;}
 @media(max-width:600px){.wrap{padding:10px 8px 50px;}.nav{gap:2px;padding:6px 6px;}.nb{padding:8px 6px;font-size:11px;}.card{padding:13px 14px;border-radius:12px;}}
+
+/* ═══ ALTIPLANO LUXURY UI POLISH ═══ */
+
+/* ── Micro-animations ── */
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(200,149,108,0);}50%{box-shadow:0 0 16px 4px rgba(200,149,108,0.15);}}
+@keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
+
+/* ── Enhanced cards ── */
+.card{background:var(--s);border-radius:var(--rl);padding:18px;position:relative;transition:box-shadow 0.25s,transform 0.2s;border:1px solid var(--b);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold3),var(--gold2),var(--gold));opacity:0.4;border-radius:var(--rl) var(--rl) 0 0;z-index:1;}
+.card:hover{box-shadow:var(--el-3);transform:translateY(-1px);}
+
+/* ── Page transitions ── */
+.pg.on{animation:fadeSlideUp 0.3s ease-out;}
+
+/* ── Better navigation tabs ── */
+.nav{background:var(--s);border-bottom:none;padding:4px 6px;gap:3px;position:relative;}
+.nav::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold2),transparent);}
+.nb{border-radius:10px;padding:9px 14px;font-size:12px;font-weight:600;transition:all 0.2s;border:1px solid transparent;background:transparent;color:var(--t3);}
+.nb:hover{background:var(--s2);color:var(--t2);}
+.nb.on{background:linear-gradient(135deg,var(--brown),var(--brown3));color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(92,61,30,0.25);}
+
+/* ── Enhanced header with mountain backdrop ── */
+.hdr{background:linear-gradient(135deg,var(--brown2) 0%,var(--brown) 40%,#3d2a14 100%);position:relative;overflow:hidden;padding:14px 20px 14px 20px;}
+.hdr::before{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 80' preserveAspectRatio='none'%3E%3Cpath d='M0,80 L0,55 Q80,30 160,45 L280,20 Q320,10 360,25 L440,50 Q480,40 520,30 L600,10 Q640,5 680,15 L760,35 Q800,25 840,40 L920,55 Q960,40 1000,30 L1080,15 Q1120,20 1160,35 L1200,50 L1200,80Z' fill='rgba(255,255,255,0.04)'/%3E%3Cpath d='M0,80 L0,65 Q100,50 200,60 L350,40 Q400,30 450,45 L550,55 Q600,35 650,25 L750,15 Q800,10 850,20 L950,45 Q1000,55 1050,50 L1200,60 L1200,80Z' fill='rgba(255,255,255,0.03)'/%3E%3C/svg%3E") no-repeat bottom/100% 40px;}
+.hdr .hdr-info .nm{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.3);}
+.hdr .hdr-info .dr{color:rgba(255,255,255,0.6);font-size:10px;}
+
+/* ── Enhanced login screen ── */
+
+/* ── Enhanced calendar styling ── */
+.disp-nav{background:linear-gradient(135deg,var(--s),var(--s2));padding:12px 16px;border-radius:var(--rl);margin-bottom:16px;border:1px solid var(--b);position:relative;}
+.disp-nav h3{font-family:var(--font-display);font-size:15px;font-weight:800;color:var(--brown);margin:0;flex:1;letter-spacing:-0.01em;}
+.disp-nav button{padding:6px 14px;border-radius:8px;border:1px solid var(--b2);background:var(--s);color:var(--t2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+.disp-nav button:hover{background:var(--s2);border-color:var(--b3);}
+.disp-nav button.on{background:linear-gradient(135deg,var(--brown),var(--brown3));color:#fff;border-color:transparent;box-shadow:0 2px 6px rgba(92,61,30,0.2);}
+
+/* ── Better calendar table ── */
+.tabla-disp{overflow-x:auto;border-radius:var(--rl);border:1px solid var(--b2);scrollbar-width:thin;scrollbar-color:var(--gold) var(--s2);}
+.tabla-disp::-webkit-scrollbar{height:6px;}
+.tabla-disp::-webkit-scrollbar-track{background:var(--s2);border-radius:3px;}
+.tabla-disp::-webkit-scrollbar-thumb{background:var(--gold);border-radius:3px;}
+table.disp{border-collapse:separate;border-spacing:0;font-size:11px;min-width:600px;width:100%;}
+table.disp thead{position:sticky;top:0;z-index:2;}
+table.disp th{background:linear-gradient(180deg,#faf5ee,#f0e6d4);color:var(--brown);font-weight:700;font-size:10px;padding:8px 4px;text-align:center;border-bottom:2px solid var(--gold);letter-spacing:0.03em;text-transform:uppercase;}
+table.disp th.hab-th{background:linear-gradient(180deg,var(--brown),var(--brown2));color:#fff;text-transform:none;font-size:11px;letter-spacing:0;min-width:95px;text-align:left;padding-left:10px;border-bottom:2px solid var(--gold);}
+table.disp td{padding:3px 2px;text-align:center;border-bottom:1px solid rgba(92,61,30,0.04);transition:background 0.1s;}
+table.disp td.hab-cell{text-align:left;padding:5px 10px;background:linear-gradient(90deg,#faf5ee 0%,#f8f0e2 100%);font-weight:700;font-size:11px;white-space:nowrap;border-right:2px solid var(--b2);position:sticky;left:0;z-index:1;}
+table.disp td.hab-cell-sucia{background:linear-gradient(90deg,#fee2e2,#fecaca) !important;color:#b91c1c !important;}
+table.disp tr:hover td.cel-l{background:rgba(200,149,108,0.06);}
+.cel-l{background:#fffdf9;transition:background 0.1s;}
+.cel-o{color:#fff;font-size:9px;font-weight:600;padding:3px;line-height:1.2;cursor:pointer;transition:filter 0.15s;position:relative;}
+.cel-o:hover{filter:brightness(1.15);z-index:1;}
+.cel-ini{border-radius:5px 0 0 5px;}
+.cel-bk{font-size:9px;font-weight:700;padding:3px;line-height:1.2;cursor:pointer;transition:filter 0.15s;}
+.cel-bk:hover{filter:brightness(1.2);}
+.cel-bk-ini{border-radius:5px 0 0 5px;}
+.cel-sucia{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:9px;font-weight:700;padding:3px;line-height:1.3;cursor:pointer;border-radius:3px;animation:pulseGlow 2s infinite;}
+
+/* ── Today column highlight ── */
+table.disp th[style*="background:#fdf0e6"]{background:linear-gradient(180deg,#fdf0e6,#fce8d0) !important;color:var(--brown) !important;position:relative;}
+table.disp th[style*="background:#fdf0e6"]::after{content:'';position:absolute;bottom:-2px;left:25%;right:25%;height:3px;background:var(--gold);border-radius:2px;}
+
+/* ── Room type badges ── */
+.bt-fam,.bt-tri,.bt-mat,.bt-flex{font-size:8px;font-weight:800;padding:1px 5px;border-radius:4px;margin-left:5px;display:inline-block;letter-spacing:0.04em;text-transform:uppercase;}
+.bt-fam{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border:1px solid rgba(217,119,6,0.2);}
+.bt-tri{background:linear-gradient(135deg,#ede9fe,#ddd6fe);color:#6d28d9;border:1px solid rgba(124,58,237,0.2);}
+.bt-mat{background:linear-gradient(135deg,#fce7f3,#fbcfe8);color:#be185d;border:1px solid rgba(219,39,119,0.2);}
+.bt-flex{background:linear-gradient(135deg,#e0f2fe,#bae6fd);color:#0369a1;border:1px solid rgba(2,132,199,0.2);}
+
+/* ── Legend enhancement ── */
+.leyenda{background:var(--s2);padding:10px 14px;border-radius:var(--r);border:1px solid var(--b);margin-bottom:12px;}
+.ley-d{width:12px;height:12px;border-radius:3px;display:inline-block;vertical-align:middle;}
+
+/* ── Booking import box ── */
+.bk-box{background:linear-gradient(135deg,#eef4ff,#dbeafe);border:1px solid rgba(0,53,128,0.15);border-radius:var(--rl);padding:14px;margin-bottom:14px;}
+.bk-logo{font-weight:800;color:#003580;font-size:13px;letter-spacing:-0.02em;}
+.bk-lbl{background:linear-gradient(135deg,#003580,#1a56a0);color:#fff;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all 0.15s;box-shadow:0 2px 6px rgba(0,53,128,0.2);}
+
+/* ── Aseo panel ── */
+.aseo-panel{background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1px solid rgba(220,38,38,0.15);border-radius:var(--rl);padding:14px;margin-bottom:14px;}
+.aseo-btn{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;box-shadow:0 2px 6px rgba(220,38,38,0.2);}
+.aseo-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(220,38,38,0.3);}
+
+/* ── Stats row for registration page ── */
+.sr{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px;}
+
+/* ── Toast enhancement ── */
+.toast{animation:fadeSlideUp 0.25s ease-out;backdrop-filter:blur(8px);}
+
+/* ── Scroll indicator for calendar ── */
+
+
+/* ── BUG 6 FIX: Dark mode for proactivity elements ── */
+body.dark .hk-proact-card{background:rgba(40,30,10,0.85) !important;border-color:rgba(217,119,6,0.3) !important;}
+body.dark .hk-proact-card .pc-titulo{color:#fbbf24 !important;}
+body.dark .hk-proact-card .pc-desc{color:rgba(255,255,255,0.6) !important;}
+body.dark .hk-proact-card .pc-pts{background:rgba(217,119,6,0.2) !important;color:#fbbf24 !important;}
+body.dark .hk-proact-card.done{background:rgba(26,92,46,0.3) !important;border-color:rgba(26,92,46,0.5) !important;}
+body.dark .hk-proact-card.done .pc-titulo{color:#80ffb0 !important;}
+body.dark .hk-proact-card.done .pc-pts{background:rgba(26,92,46,0.2) !important;color:#80ffb0 !important;}
+body.dark .hk-proact-empty{background:rgba(255,255,255,0.05) !important;}
+body.dark .hk-disclaimer-box{background:var(--s) !important;color:var(--t) !important;}
+body.dark .hk-disc-body .di-txt{color:var(--t2) !important;}
+body.dark .hk-disc-body .di-txt strong{color:#fbbf24 !important;}
+body.dark .hk-disc-check{background:rgba(217,119,6,0.15) !important;border-color:rgba(217,119,6,0.4) !important;}
+body.dark .hk-disc-check label{color:#fbbf24 !important;}
+body.dark .hk-proact-fab{box-shadow:0 4px 16px rgba(217,119,6,0.3);}
+
+/* ── Premium hover effect for room cells ── */
+table.disp td.hab-cell{transition:background 0.15s;}
+table.disp tr:hover td.hab-cell{background:linear-gradient(90deg,#f5eadc,#f0dfc8) !important;}
+table.disp tr:hover td.hab-cell-sucia{background:linear-gradient(90deg,#fecaca,#fca5a5) !important;}
+
+/* ── Responsive calendar mobile ── */
+@media(max-width:640px){
+  .disp-nav{padding:10px 12px;gap:6px;}
+  .disp-nav h3{font-size:13px;width:100%;margin-bottom:4px;}
+  .disp-nav button{padding:5px 10px;font-size:10px;}
+  table.disp td.hab-cell{min-width:70px;font-size:10px;padding:4px 6px;}
+}
+
+
 @media print{.nav,.bk-box,#syncBadge,.toast,.rh button,#checkinAlertBar,#darkToggle,.papelera-btn,.fr,.bexp,.bdng{display:none!important;}.pg{display:block!important;}body{background:#fff;color:#000;}.reg th,.reg td{border:0.5px solid #ccc;padding:4px 6px;font-size:10px;}.reg thead th{background:#eee!important;color:#000!important;}.tw{overflow:visible;}}
 
 /* ── MODO OSCURO ─────────────────────────────────────────── */
@@ -1947,8 +2128,94 @@ body.dark .confirm-cancel{background:var(--s2);color:var(--t2);border-color:var(
       <div class="hk-room-list" id="hkCleanList"></div>
     </div>
     <div class="hk-section" id="hkArrivalsSection" style="margin-top:14px;display:none;"></div>
+
+    <!-- ═══ PROACTIVIDAD ═══ -->
+    <div class="hk-proact-score" id="hkProactScore" style="display:none;">
+      <div><div class="ps-pts" id="hkProactPts">0</div><div class="ps-lbl">Puntos hoy</div></div>
+      <div class="ps-note">⚙️ Administración monitorea tareas declaradas y realizadas</div>
+    </div>
+    <div class="hk-proact-section" id="hkProactSection">
+      <div class="hk-proact-header">
+        <div class="hk-section-title" style="margin-bottom:0;">⭐ Iniciativa del día</div>
+        <button class="hk-proact-fab" onclick="hkShowProactTasks()">
+          <span class="fab-ico">➕</span> Reportar iniciativa
+        </button>
+      </div>
+      <div class="hk-proact-list" id="hkProactList"></div>
+    </div>
   </div>
 </div>
+
+<!-- ═══ DISCLAIMER PROACTIVIDAD ═══ -->
+<div class="hk-disclaimer-overlay" id="hkDisclaimerModal">
+  <div class="hk-disclaimer-box">
+    <div class="hk-disc-header">
+      <div class="dh-ico">⚖️</div>
+      <div class="dh-titulo">Compromiso de integridad</div>
+      <div class="dh-sub">Sistema de reconocimiento por iniciativa propia</div>
+    </div>
+    <div class="hk-disc-body">
+      <div class="hk-disc-item">
+        <div class="di-ico">🔍</div>
+        <div class="di-txt"><strong>Las actividades de iniciativa son auditables.</strong> Administración puede verificar en terreno cualquier tarea declarada, en cualquier momento y sin previo aviso.</div>
+      </div>
+      <div class="hk-disc-item">
+        <div class="di-ico">📊</div>
+        <div class="di-txt"><strong>Tu trabajo general es monitoreado.</strong> Se compara lo que declaras en la app con lo que se observa en la operación real del hotel. La consistencia es clave.</div>
+      </div>
+      <div class="hk-disc-item">
+        <div class="di-ico">⚠️</div>
+        <div class="di-txt"><strong>Declarar tareas no realizadas será sancionado</strong> y afectará tu evaluación de desempeño. Sé honesto/a — esta herramienta premia el esfuerzo real.</div>
+      </div>
+      <div class="hk-disc-item">
+        <div class="di-ico">🏆</div>
+        <div class="di-txt"><strong>Tu iniciativa genuina vale mucho.</strong> Este sistema existe para reconocer y premiar a quienes dan lo mejor de sí. ¡Úsalo con orgullo!</div>
+      </div>
+      <div class="hk-disc-check" onclick="document.getElementById('discCheckbox').click()">
+        <input type="checkbox" id="discCheckbox" onclick="event.stopPropagation();hkDiscCheckChanged()">
+        <label for="discCheckbox" onclick="event.stopPropagation()">He leído y entiendo las condiciones de uso</label>
+      </div>
+      <button class="hk-disc-accept" id="discAcceptBtn" disabled onclick="hkAcceptDisclaimer()">Entiendo y acepto</button>
+    </div>
+    <div class="hk-disc-footer">Hotel Las Vicuñas — Sistema de gestión de desempeño</div>
+  </div>
+</div>
+
+<!-- ═══ SELECTOR TAREAS PROACTIVAS ═══ -->
+<div class="hk-disclaimer-overlay" id="hkProactPickerModal">
+  <div class="hk-disclaimer-box" style="max-width:460px;">
+    <div class="hk-disc-header" style="background:linear-gradient(135deg,#d97706,#f59e0b);padding:16px 20px;">
+      <div class="dh-titulo" style="font-size:15px;">⭐ Registrar actividad de iniciativa</div>
+      <div class="dh-sub">Selecciona la tarea que realizaste por cuenta propia</div>
+    </div>
+    <div style="padding:14px 16px;max-height:55vh;overflow-y:auto;" id="hkProactPickerList"></div>
+    <div style="padding:10px 16px 16px;text-align:center;">
+      <button onclick="hkCloseProactPicker()" style="padding:10px 24px;background:#f5f0e8;color:#78716c;border:1px solid #d6d3d1;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RECORDATORIO SEMANAL ═══ -->
+<div class="hk-disclaimer-overlay" id="hkReminderModal">
+  <div class="hk-disclaimer-box" style="max-width:380px;">
+    <div class="hk-disc-header" style="background:linear-gradient(135deg,#0369a1,#0ea5e9);padding:18px 20px;">
+      <div class="dh-ico" style="font-size:32px;">📋</div>
+      <div class="dh-titulo" style="font-size:15px;">Recordatorio semanal</div>
+    </div>
+    <div class="hk-disc-body" style="padding:16px 20px;">
+      <div class="hk-disc-item">
+        <div class="di-ico">🔎</div>
+        <div class="di-txt">Recuerda que <strong>todas las actividades declaradas pueden ser auditadas</strong> por administración. Se verifica tanto el trabajo realizado en terreno como lo reportado en esta app.</div>
+      </div>
+      <div class="hk-disc-item">
+        <div class="di-ico">💪</div>
+        <div class="di-txt">Sigue usando esta herramienta con honestidad. <strong>Tu esfuerzo real es lo que cuenta.</strong></div>
+      </div>
+      <button class="hk-disc-accept" onclick="hkCloseReminder()" style="margin-top:8px;">Entendido</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- ═══════════════ APP ═══════════════ -->
 <div id="app">
@@ -2105,8 +2372,9 @@ body.dark .confirm-cancel{background:var(--s2);color:var(--t2);border-color:var(
   <div class="wrap">
     <div class="card">
       <div class="disp-nav">
-        <h3 id="dispTit">Disponibilidad</h3>
+        <h3 id="dispTit" style="display:flex;align-items:center;gap:8px;">Disponibilidad</h3>
         <button class="on" id="btnSem" onclick="setVista('sem')">Semana</button>
+        <button id="btn14d" onclick="setVista('14d')">14 días</button>
         <button id="btnMes" onclick="setVista('mes')">Mes</button>
         <button onclick="navD(-1)">◀</button>
         <button onclick="navD(1)">▶</button>
@@ -2790,6 +3058,210 @@ function renderHKArrivalCard(r, HOY){
 }
 
 
+
+// ══════════════════════════════════════════════════════════════
+// PROACTIVIDAD — SISTEMA DE INICIATIVA HOUSEKEEPING
+// ══════════════════════════════════════════════════════════════
+
+const PROACT_TAREAS = [
+  {id:"dano_menor",  ico:"🔧", titulo:"Reparación menor detectada",   desc:"Reporté y/o arreglé un daño menor (cañería, enchufe, manilla, etc.)", pts:15},
+  {id:"limp_prof",   ico:"🧽", titulo:"Limpieza profunda extra",       desc:"Limpié a fondo una zona común o área no programada hoy.", pts:12},
+  {id:"asist_huesp", ico:"🤝", titulo:"Asistencia especial a huésped", desc:"Ayudé a un huésped con necesidad especial (mal de altura, equipaje, orientación, etc.)", pts:10},
+  {id:"infra_report",ico:"🏗️", titulo:"Reporte de infraestructura",    desc:"Detecté y reporté un problema de infraestructura a administración.", pts:8},
+  {id:"reposicion",  ico:"📦", titulo:"Reposición anticipada",         desc:"Repuse insumos de zonas comunes antes de que se agotaran.", pts:8},
+  {id:"orden_bodega", ico:"🗄️", titulo:"Orden de área de servicio",    desc:"Ordené y limpié bodega, lavandería u otra área de servicio.", pts:10},
+];
+
+// ── Storage helpers ──
+function getProactLog(){
+  try{ return JSON.parse(localStorage.getItem("hv_proact_log")||"[]"); }
+  catch(e){ return []; }
+}
+function saveProactLog(arr){
+  localStorage.setItem("hv_proact_log", JSON.stringify(arr));
+  sbSet("hv_proact_log", arr);
+}
+function getProactDisclaimer(){
+  try{ return JSON.parse(localStorage.getItem("hv_proact_disclaimer")||"null"); }
+  catch(e){ return null; }
+}
+function saveProactDisclaimer(obj){
+  localStorage.setItem("hv_proact_disclaimer", JSON.stringify(obj));
+  sbSet("hv_proact_disclaimer", obj);
+}
+function getProactReminder(){
+  try{ return JSON.parse(localStorage.getItem("hv_proact_reminder")||"null"); }
+  catch(e){ return null; }
+}
+function saveProactReminder(obj){
+  localStorage.setItem("hv_proact_reminder", JSON.stringify(obj));
+}
+
+// ── Disclaimer logic ──
+function hkDiscCheckChanged(){
+  var cb = document.getElementById("discCheckbox");
+  document.getElementById("discAcceptBtn").disabled = !cb.checked;
+}
+
+function hkNeedsDisclaimer(){
+  var d = getProactDisclaimer();
+  return !d || !d.accepted;
+}
+
+function hkNeedsWeeklyReminder(){
+  var d = getProactDisclaimer();
+  if(!d || !d.accepted) return false;
+  var reminder = getProactReminder();
+  var hoy = hoyISO();
+  // Check if 7+ days since last reminder (or first acceptance)
+  var lastShown = reminder ? reminder.lastShown : (d.acceptedDate || "2000-01-01");
+  var diffDays = Math.floor((parseLocalDate(hoy) - parseLocalDate(lastShown)) / 86400000);
+  if(diffDays < 7) return false;
+  // Check if behavior is suspiciously good: >80% possible tasks across 5+ active days in last 14 days
+  var log = getProactLog();
+  var cutoff = new Date(parseLocalDate(hoy).getTime() - 14*86400000);
+  var recentByDay = {};
+  log.forEach(function(entry){
+    if(parseLocalDate(entry.fecha) >= cutoff){
+      if(!recentByDay[entry.fecha]) recentByDay[entry.fecha] = 0;
+      recentByDay[entry.fecha]++;
+    }
+  });
+  var activeDays = Object.keys(recentByDay).length;
+  if(activeDays < 3) return false; // Not enough data, skip reminder
+  var totalReported = Object.values(recentByDay).reduce(function(a,b){return a+b;},0);
+  var maxPossible = activeDays * PROACT_TAREAS.length;
+  var ratio = totalReported / maxPossible;
+  // Solo mostrar recordatorio si el ratio es sospechosamente alto (>65% de tareas posibles)
+  return ratio > 0.65;
+}
+
+function hkShowDisclaimer(callback){
+  document.getElementById("discCheckbox").checked = false;
+  document.getElementById("discAcceptBtn").disabled = true;
+  document.getElementById("hkDisclaimerModal").classList.add("active");
+  window._proactDisclaimerCallback = callback;
+}
+
+function hkAcceptDisclaimer(){
+  document.getElementById("hkDisclaimerModal").classList.remove("active");
+  var obj = {accepted:true, acceptedDate:hoyISO()};
+  saveProactDisclaimer(obj);
+  saveProactReminder({lastShown: hoyISO()});
+  toast("Compromiso aceptado — ¡a dar lo mejor! 💪","ok",3500);
+  if(window._proactDisclaimerCallback) window._proactDisclaimerCallback();
+}
+
+function hkShowWeeklyReminder(callback){
+  document.getElementById("hkReminderModal").classList.add("active");
+  window._proactReminderCallback = callback;
+}
+
+function hkCloseReminder(){
+  document.getElementById("hkReminderModal").classList.remove("active");
+  saveProactReminder({lastShown: hoyISO()});
+  if(window._proactReminderCallback) window._proactReminderCallback();
+}
+
+// ── Proactive task picker ──
+function hkShowProactTasks(){
+  // Gate 1: First-time disclaimer
+  if(hkNeedsDisclaimer()){
+    hkShowDisclaimer(function(){ hkShowProactTasks(); });
+    return;
+  }
+  // Gate 2: Weekly reminder (if behavior warrants it)
+  if(hkNeedsWeeklyReminder()){
+    hkShowWeeklyReminder(function(){ hkShowProactTasks(); });
+    return;
+  }
+  // Show picker
+  var hoy = hoyISO();
+  var log = getProactLog();
+  var todayLog = log.filter(function(e){ return e.fecha === hoy; });
+  var todayIds = todayLog.map(function(e){ return e.tareaId; });
+
+  var listEl = document.getElementById("hkProactPickerList");
+  listEl.innerHTML = PROACT_TAREAS.map(function(t){
+    var yaDone = todayIds.includes(t.id);
+    return '<div class="hk-proact-card'+(yaDone?' done':'')+'" style="margin-bottom:8px;cursor:'+(yaDone?'not-allowed':'pointer')+';" onclick="'+(yaDone?'':'hkDeclararProact(\''+t.id+'\')')+'">' +
+      '<div class="pc-ico">'+t.ico+'</div>' +
+      '<div class="pc-info"><div class="pc-titulo">'+t.titulo+'</div><div class="pc-desc">'+t.desc+'</div></div>' +
+      '<div class="pc-pts">'+(yaDone?'✓ Hecho':'+'+t.pts+' pts')+'</div>' +
+    '</div>';
+  }).join("");
+  document.getElementById("hkProactPickerModal").classList.add("active");
+}
+
+function hkCloseProactPicker(){
+  document.getElementById("hkProactPickerModal").classList.remove("active");
+}
+
+function hkDeclararProact(tareaId){
+  var tarea = PROACT_TAREAS.find(function(t){ return t.id === tareaId; });
+  if(!tarea) return;
+  showConfirm(
+    "Confirmar actividad",
+    "¿Confirmas que realizaste: \"" + tarea.titulo + "\"?\n\nRecuerda: esta declaración puede ser auditada por administración.",
+    function(){
+      var log = getProactLog();
+      log.push({
+        tareaId: tarea.id,
+        fecha: hoyISO(),
+        hora: new Date().toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"}),
+        pts: tarea.pts
+      });
+      saveProactLog(log);
+      hkCloseProactPicker();
+      renderHKProact();
+      toast("⭐ +" + tarea.pts + " pts — " + tarea.titulo, "ok", 3500);
+    },
+    "Sí, lo hice",
+    false
+  );
+}
+
+// ── Render proactivity section ──
+function renderHKProact(){
+  var hoy = hoyISO();
+  var log = getProactLog();
+  var todayLog = log.filter(function(e){ return e.fecha === hoy; });
+  var totalPts = todayLog.reduce(function(sum, e){ return sum + (e.pts||0); }, 0);
+
+  // Score bar
+  var scoreEl = document.getElementById("hkProactScore");
+  if(todayLog.length > 0){
+    scoreEl.style.display = "flex";
+    document.getElementById("hkProactPts").textContent = totalPts;
+  } else {
+    scoreEl.style.display = "none";
+  }
+
+  // List of today's declared tasks
+  var listEl = document.getElementById("hkProactList");
+  if(todayLog.length === 0){
+    listEl.innerHTML = '<div class="hk-proact-empty"><div class="pe-ico">⭐</div><div class="pe-txt">Sin actividades extra hoy</div><div class="pe-sub">Toca "Reportar iniciativa" cuando hagas algo adicional</div></div>';
+  } else {
+    listEl.innerHTML = todayLog.map(function(entry){
+      var tarea = PROACT_TAREAS.find(function(t){ return t.id === entry.tareaId; });
+      if(!tarea) return "";
+      return '<div class="hk-proact-card done">' +
+        '<div class="pc-ico">'+tarea.ico+'</div>' +
+        '<div class="pc-info"><div class="pc-titulo">'+tarea.titulo+'</div><div class="pc-desc">'+entry.hora+' — '+tarea.desc+'</div></div>' +
+        '<div class="pc-pts">+'+entry.pts+' pts</div>' +
+      '</div>';
+    }).join("");
+  }
+}
+
+// ── Hook into renderHK to also render proactivity ──
+var _originalRenderHK = renderHK;
+renderHK = function(){
+  _originalRenderHK();
+  renderHKProact();
+};
+
+
 function fmtDia(s){const[y,m,d]=s.split("-");return `${parseInt(d)}/${parseInt(m)}`;}
 // fmtFC: formatea "YYYY-MM-DD" → "DD/MM/YYYY" sin riesgo de offset UTC
 function fmtFC(s){if(!s||s.length<10)return s||"—";const[y,m,d]=s.slice(0,10).split("-");return `${d}/${m}/${y}`;}
@@ -3446,6 +3918,7 @@ function renderRoomLegend(){
 function setVista(v){
   vistaD=v;
   document.getElementById("btnSem").classList.toggle("on",v==="sem");
+  var btn14=document.getElementById("btn14d"); if(btn14) btn14.classList.toggle("on",v==="14d");
   document.getElementById("btnMes").classList.toggle("on",v==="mes");
   rDisp();
 }
@@ -3453,7 +3926,7 @@ function navD(d){
   if(d===0){
     if(vistaD==="mes"){
       const hoy=hoyISO();
-      baseD=hoy.slice(0,7)+"-01"; // first of current month
+      baseD=hoy.slice(0,7)+"-01";
     } else {
       baseD=getLunes(hoyISO());
     }
@@ -3461,6 +3934,10 @@ function navD(d){
     if(vistaD==="sem"){
       const lun=parseLocalDate(baseD);
       lun.setDate(lun.getDate()+d*7);
+      baseD=isoLocal(lun);
+    } else if(vistaD==="14d"){
+      const lun=parseLocalDate(baseD);
+      lun.setDate(lun.getDate()+d*14);
       baseD=isoLocal(lun);
     } else {
       const b=parseLocalDate(baseD);
@@ -3484,6 +3961,11 @@ function rDisp(){
     const lun=parseLocalDate(lunStr);
     for(let i=0;i<7;i++){const d=new Date(lun.getFullYear(),lun.getMonth(),lun.getDate()+i);dias.push(isoLocal(d));}
     document.getElementById("dispTit").textContent=`Semana del ${fmtDia(dias[0])} al ${fmtDia(dias[6])}`;
+  }else if(vistaD==="14d"){
+    const lunStr=getLunes(baseD);
+    const lun=parseLocalDate(lunStr);
+    for(let i=0;i<14;i++){const d=new Date(lun.getFullYear(),lun.getMonth(),lun.getDate()+i);dias.push(isoLocal(d));}
+    document.getElementById("dispTit").textContent=`${fmtDia(dias[0])} — ${fmtDia(dias[13])} (14 días)`;
   }else{
     const y=base.getFullYear(),m=base.getMonth();
     const dim=new Date(y,m+1,0).getDate();
@@ -3517,7 +3999,10 @@ function rDisp(){
   dias.forEach(d=>{
     const dt=new Date(d+"T12:00:00");
     const esHoy=d===HOY;
-    html+=`<th style="${esHoy?"background:#fdf0e6;color:var(--mar);":""}">${vistaD==="mes"?`${dt.getDate()}<br><span style="font-weight:400;font-size:9px;">${DS[dt.getDay()]}</span>`:`${DS[dt.getDay()]}<br>${dt.getDate()} ${MS[dt.getMonth()]}`}</th>`;
+    const esDom=dt.getDay()===0;
+    const esLun=dt.getDay()===1;
+    const weekBorder=esLun&&vistaD==="14d"?"border-left:2px solid var(--gold);":"";
+    html+=`<th style="${esHoy?"background:#fdf0e6;color:var(--mar);":""}${esDom?"opacity:0.7;":""}${weekBorder}">${vistaD==="mes"||vistaD==="14d"?`${dt.getDate()}<br><span style="font-weight:400;font-size:9px;">${DS[dt.getDay()]}</span>`:`${DS[dt.getDay()]}<br>${dt.getDate()} ${MS[dt.getMonth()]}`}</th>`;
   });
   html+=`</tr></thead><tbody>`;
 
@@ -3533,11 +4018,12 @@ function rDisp(){
       const res=reservas.find(r=>r.roomNum===rn&&r.checkin<=d&&r.checkout>d);
       const bk=!res?bkRes.find(r=>r.roomNum===rn&&r.checkin<=d&&r.checkout>d&&!r.cancelada):null;
       const esHoy=d===HOY;
+      const _dt14=new Date(d+"T12:00:00");const _wb14=vistaD==="14d"&&_dt14.getDay()===1?"border-left:2px solid rgba(200,149,108,0.25);":"";
       if(res){
         const esIni=res.checkin===d;
         const nombre=res.nombre.split(" ")[0];
         const faltaBadge=res.datosFaltantes?`<span style="display:block;font-size:7px;background:#fef3c7;color:#92400e;border-radius:3px;padding:0 2px;margin-top:1px;line-height:1.4;">⚠ datos</span>`:"";
-        html+=`<td class="cel-o${esIni?" cel-ini":""}" style="background:${rc.bg};color:${rc.fg};" title="🏠 Hab.${rn} — ${res.nombre.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}&#10;📅 CI: ${fmtFC(res.checkin)}  CO: ${fmtFC(res.checkout)}&#10;🌙 ${res.noches} noches${res.datosFaltantes?"&#10;⚠ Faltan datos — toca para completar":""}" onclick="verR('${res.id}')">${esIni?`<span style="font-size:8px;line-height:1.2;display:block;">${nombre}</span>${faltaBadge}`:"&nbsp;"}</td>`;
+        html+=`<td class="cel-o${esIni?" cel-ini":""}" style="background:${rc.bg};color:${rc.fg};${_wb14}" title="🏠 Hab.${rn} — ${res.nombre.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}&#10;📅 CI: ${fmtFC(res.checkin)}  CO: ${fmtFC(res.checkout)}&#10;🌙 ${res.noches} noches${res.datosFaltantes?"&#10;⚠ Faltan datos — toca para completar":""}" onclick="verR('${res.id}')">${esIni?`<span style="font-size:8px;line-height:1.2;display:block;">${nombre}</span>${faltaBadge}`:"&nbsp;"}</td>`;
       }else if(bk){
         const esIni=bk.checkin===d;
         const nm=bk.nombre.length>8?bk.nombre.slice(0,8)+"…":bk.nombre;
@@ -3545,9 +4031,9 @@ function rDisp(){
         let bkHash=0; for(let ci=0;ci<bk.id.length;ci++) bkHash=(bkHash*31+bk.id.charCodeAt(ci))&0xffff;
         const bkBg=BK_COLORS[bkHash%BK_COLORS.length];
         const _esc=s=>String(s||""  ).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");const bkTitle="🏨 Booking.com&#10;👤 "+_esc(bk.nombre)+(bk.pax?"&#10;👥 "+bk.pax+" pax":"")+(bk.telefono?"&#10;📞 "+_esc(bk.telefono):"")+(bk.numReserva?"&#10;🔖 Res: "+_esc(bk.numReserva):"")+"&#10;📅 CI: "+fmtFC(bk.checkin)+"  CO: "+fmtFC(bk.checkout)+"&#10;🌙 "+bk.noches+" noches"+(bk.precio?"&#10;💰 "+_esc(bk.precio):"")+(bk.pais?"&#10;🌍 "+_esc(bk.pais):"")+"&#10;(toca para ver detalles)";
-        html+=`<td class="cel-bk${esIni?" cel-bk-ini":""}" style="background:${bkBg};cursor:pointer;" title="${bkTitle}" onclick="verBK('${bk.id}')">${esIni?`<span style="font-size:8px;">${nm}</span>`:"&nbsp;"}</td>`;
+        html+=`<td class="cel-bk${esIni?" cel-bk-ini":""}" style="background:${bkBg};cursor:pointer;${_wb14}" title="${bkTitle}" onclick="verBK('${bk.id}')">${esIni?`<span style="font-size:8px;">${nm}</span>`:"&nbsp;"}</td>`;
       }else if(esSucia&&d===HOY){
-        html+=`<td class="cel-sucia" title="Hab. ${rn} — Pendiente de aseo" onclick="marcarLimpia(${rn})">🧹<span class="cel-sucia-lbl">Aseo</span></td>`;
+        html+=`<td class="cel-sucia" style="${_wb14}" title="Hab. ${rn} — Pendiente de aseo" onclick="marcarLimpia(${rn})">🧹<span class="cel-sucia-lbl">Aseo</span></td>`;
       }else{
         html+=`<td class="cel-l" style="${esHoy?"background:#fdf5ec;":""}"></td>`;
       }
@@ -3557,7 +4043,7 @@ function rDisp(){
   html+=`</tbody></table>`;
   document.getElementById("tablaDisp").innerHTML=html;
   // Scroll today's column into view on month view
-  if(vistaD==="mes"){
+  if(vistaD==="mes"||vistaD==="14d"){
     requestAnimationFrame(()=>{
       const hoyTh=document.querySelector("table.disp th[style*='background:#fdf0e6']");
       if(hoyTh) hoyTh.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
@@ -5166,7 +5652,7 @@ async function sbSet(key, value){
 
 // ── Push local data on first connect ─────────────────────────────
 function pushLocalToSupabase(){
-  const keys = ["hv_reservas","hv_registros","hv_booking","hv_sucias","hv_limpias_hoy","hv_papelera","hv_historial_limpieza"];
+  const keys = ["hv_reservas","hv_registros","hv_booking","hv_sucias","hv_limpias_hoy","hv_papelera","hv_historial_limpieza","hv_proact_log","hv_proact_disclaimer"];
   keys.forEach(k=>{
     const raw = localStorage.getItem(k);
     if(!raw) return;
@@ -5201,6 +5687,8 @@ function setupRealtimeListeners(){
     "hv_registros":   ()=>{ try{rTabla();}catch(e){} },
     "hv_papelera":    ()=>{ try{updatePapeleraBadges();}catch(e){} },
     "hv_historial_limpieza": ()=>{ /* no UI refresh needed */ },
+    "hv_proact_log": ()=>{ try{ if(document.getElementById("hkApp").style.display!=="none") renderHKProact(); }catch(e){} },
+    "hv_proact_disclaimer": ()=>{ /* no UI refresh needed */ },
   };
 
   sbChannel = sbClient.channel("hotel_sync")
