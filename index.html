@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="theme-color" content="#5c3d1e">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hotel Las Vicuñas — Recepción & Housekeeping</title>
+<title>Hotel Las Vicuñas — Recepción & Housekeeping v4.2</title>
 <!-- Favicon -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦙</text></svg>">
 <meta name="description" content="Sistema de recepción, disponibilidad y housekeeping — Hotel Las Vicuñas, Putre, Altiplano chileno.">
@@ -129,7 +129,16 @@ function importarCSV(input){
         var sep = lines[0].includes(";") ? ";" : ",";
         var headers = lines[0].split(sep).map(function(h){ return h.replace(/^["']|["']$/g,"").trim(); });
         for(var i=1; i<lines.length; i++){
-          var cols = lines[i].split(sep).map(function(col){ return col.replace(/^["']|["']$/g,"").trim(); });
+          var cols = [];
+          var raw = lines[i];
+          var inQ = false, cur = "";
+          for(var ci=0; ci<raw.length; ci++){
+            var ch = raw[ci];
+            if(ch==='"'){ inQ=!inQ; continue; }
+            if(ch===sep && !inQ){ cols.push(cur.trim()); cur=""; continue; }
+            cur+=ch;
+          }
+          cols.push(cur.trim());
           var obj = {};
           headers.forEach(function(h,j){ obj[h] = cols[j]||""; });
           rows.push(obj);
@@ -245,7 +254,7 @@ async function importarFotoCuaderno(input){
     var prompt = "Eres un asistente experto que extrae reservas de fotos de cuadernos de hotel.\nHabitaciones Hotel Las Vicuñas: Familiar(102,103,202)=$90.000, Triple(118-121)=$77.350, Matrimonial(228)=$65.450, Flex/Doble(resto)=$59.500-$50.000\nExtrae TODAS las reservas visibles. Responde SOLO JSON válido sin markdown ni explicaciones:\n{\"reservas\":[{\"nombre\":\"Apellido Nombre\",\"checkin\":\"YYYY-MM-DD\",\"checkout\":\"YYYY-MM-DD\",\"habitacion\":\"tipo o numero de hab\",\"pax\":2,\"precio_estimado\":118900,\"telefono\":\"\",\"numReserva\":\"\",\"pais\":\"\",\"notas\":\"obs\"}]}";
     var response = await fetch("https://api.anthropic.com/v1/messages", {
       method:"POST",
-      headers:{"Content-Type":"application/json"},
+      headers:{"Content-Type":"application/json","x-api-key":localStorage.getItem("hlv_anthropic_key")||"","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
       body:JSON.stringify({
         model:"claude-sonnet-4-20250514", max_tokens:1000,
         messages:[{role:"user", content:[
@@ -676,7 +685,9 @@ function cambiarClave(){
 }
 
 function getClave(){
-  return localStorage.getItem("hv_admin_clave") || "nikopro123";
+  var _c = localStorage.getItem("hv_admin_clave");
+  if(!_c){ _c = prompt("Primera vez: establece una clave de administrador"); if(_c && _c.length >= 4){ localStorage.setItem("hv_admin_clave", _c); toast("Clave establecida","ok"); } else { _c = "cambiame"; localStorage.setItem("hv_admin_clave", _c); toast("Clave temporal 'cambiame' — cámbiala en Ajustes","warn",5000); } }
+  return _c;
 }
 
 function cambiarPIN(){
@@ -691,7 +702,9 @@ function cambiarPIN(){
 }
 
 function getHKPIN(){
-  return localStorage.getItem("hv_hk_pin") || "aseo";
+  var _p = localStorage.getItem("hv_hk_pin");
+  if(!_p){ _p = "1234"; localStorage.setItem("hv_hk_pin", _p); }
+  return _p;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -922,7 +935,12 @@ window.addEventListener("DOMContentLoaded", function(){
   actualizarAlertaCheckin();
   setInterval(actualizarAlertaCheckin, 60000);
   // Auto-importar reservas del cuaderno en silencio al iniciar
-  setTimeout(function(){ try{ importarCuaderno(true); }catch(e){} }, 1200);
+  // Only auto-import cuaderno if latest entry is still relevant (within 30 days)
+  var _lastCuad = RESERVAS_CUADERNO[RESERVAS_CUADERNO.length-1];
+  if(_lastCuad){
+    var _daysDiff = Math.round((new Date() - new Date(_lastCuad.checkout)) / 86400000);
+    if(_daysDiff < 30) setTimeout(function(){ try{ importarCuaderno(true); }catch(e){} }, 1200);
+  }
 });
 // ══════════════════════════════════════════════════════════════
 </script>
@@ -2052,7 +2070,42 @@ body.dark .confirm-cancel{background:var(--s2);color:var(--t2);border-color:var(
   display:inline-flex;align-items:center;gap:5px;
 }
 .btn-cuaderno-import:hover{opacity:.9;}
+
+/* ═══ UX IMPROVEMENTS v4 ═══ */
+/* Smooth tab content transitions */
+.tab-content{animation:tabFade .2s ease}
+@keyframes tabFade{from{opacity:0}to{opacity:1}}
+/* Calendar day hover */
+.cal-day{transition:background .15s,transform .1s;touch-action:manipulation}
+.cal-day:active{transform:scale(.96)}
+/* Room cards */
+.room-card{transition:all .15s}
+.room-card:active{transform:scale(.98)}
+/* Modal improvements */
+.modal-overlay{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+/* Housekeeping PIN buttons */
+.pin-btn{transition:transform .1s;touch-action:manipulation}
+.pin-btn:active{transform:scale(.9)}
+/* Better sync indicator */
+#syncBadge{transition:all .3s}
+/* Print improvements */
+@media print{
+  .bottom-nav,.top-bar,button{display:none!important}
+  .tab-content{page-break-inside:avoid}
+  body{background:#fff!important;color:#000!important}
+}
+
+
+/* ═══ LOADING OVERLAY ═══ */
+.loading-overlay{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.loading-overlay.on{display:flex}
+.loading-spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:lspin .8s linear infinite}
+@keyframes lspin{to{transform:rotate(360deg)}}
 </style>
+<script>
+window.addEventListener('error',function(e){console.error('Global:',e.message,e.filename,e.lineno)});
+window.addEventListener('unhandledrejection',function(e){console.error('Promise:',e.reason)});
+</script>
 </head>
 <body>
 
@@ -2521,6 +2574,15 @@ function doLogin(){
   } else {
     document.getElementById("loginErr").style.display = "block";
     document.getElementById("claveInput").value = "";
+    // Rate limit: disable login for escalating seconds
+    if(!doLogin._fails) doLogin._fails=0;
+    doLogin._fails++;
+    if(doLogin._fails >= 3){
+      var btn=document.querySelector("#loginScreen button");
+      if(btn){btn.disabled=true;btn.textContent="Espera "+(doLogin._fails*2)+"s...";
+        setTimeout(function(){btn.disabled=false;btn.textContent="Ingresar";},doLogin._fails*2000);
+      }
+    }
     document.getElementById("claveInput").focus();
   }
 }
@@ -2866,7 +2928,6 @@ function getNDocumento(){ return document.getElementById("nDocumentoInp")?.value
 // ══════════════════════════════
 // HOUSEKEEPING
 // ══════════════════════════════
-const HK_PIN = "aseo";
 let esHousekeeper = false;
 
 function doHousekeeping(){
@@ -4118,9 +4179,10 @@ function verR(id){
       </div>
     </div>`;
   document.body.appendChild(modal);
-  modal.addEventListener("click", e=>{ if(e.target===modal) modal.remove(); });
-  const escBK=(e)=>{ if(e.key==="Escape"){ modal.remove(); document.removeEventListener("keydown",escBK); } };
-  document.addEventListener("keydown",escBK);
+  const cleanup=()=>{ modal.remove(); document.removeEventListener("keydown",escHandler); };
+  modal.addEventListener("click", e=>{ if(e.target===modal) cleanup(); });
+  const escHandler=(e)=>{ if(e.key==="Escape") cleanup(); };
+  document.addEventListener("keydown",escHandler);
 }
 
 function verBK(id){
@@ -4840,7 +4902,7 @@ function renderFinResumen(todas){
     const pNoche=nochesTotal>0?precioTotal/nochesTotal:0;
     // Contar solo noches dentro del rango seleccionado
     let nochesEnRango=0;
-    for(let d=parseLocalDate(r.checkin);d<parseLocalDate(r.checkout);d.setDate(d.getDate()+1)){
+    var _coDate=parseLocalDate(r.checkout);for(let d=parseLocalDate(r.checkin);d<_coDate;d.setDate(d.getDate()+1)){
       if(d>=desdeDate && d<hastaDate) nochesEnRango++;
     }
     const monto=Math.round(pNoche*nochesEnRango);
@@ -5738,10 +5800,11 @@ saveLimpiasHoy = function(arr){
 const _guardarOrig = guardar;
 guardar = function(){
   _guardarOrig();
-  setTimeout(()=>{
+  // Sync immediately — no delay to prevent data loss on tab close
+  try{
     sbSet("hv_reservas",  getReservas());
     sbSet("hv_registros", getReg());
-  }, 250);
+  }catch(e){ console.warn("Sync error after save:",e); }
 };
 
 function fbSaveBooking(arr){
@@ -5852,6 +5915,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE hotel_data;</code></div>
 </div>
 
 <!-- TOAST CONTAINER -->
+<div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div></div>
 <div id="toastContainer"></div>
 
 <!-- CONFIRM MODAL -->
