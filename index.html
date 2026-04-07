@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="theme-color" content="#5c3d1e">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hotel Las Vicuñas — Recepción & Housekeeping v4.2</title>
+<title>Hotel Las Vicuñas — Recepción & Housekeeping v4.3</title>
 <!-- Favicon -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦙</text></svg>">
 <meta name="description" content="Sistema de recepción, disponibilidad y housekeeping — Hotel Las Vicuñas, Putre, Altiplano chileno.">
@@ -686,25 +686,24 @@ function cambiarClave(){
 
 function getClave(){
   var _c = localStorage.getItem("hv_admin_clave");
-  if(!_c){ _c = prompt("Primera vez: establece una clave de administrador"); if(_c && _c.length >= 4){ localStorage.setItem("hv_admin_clave", _c); toast("Clave establecida","ok"); } else { _c = "cambiame"; localStorage.setItem("hv_admin_clave", _c); toast("Clave temporal 'cambiame' — cámbiala en Ajustes","warn",5000); } }
+  if(!_c){ _c = "administracion"; localStorage.setItem("hv_admin_clave", _c); }
   return _c;
 }
 
 function cambiarPIN(){
-  showInput("Nuevo PIN de Housekeeping:", "", function(nuevo){
-    if(!nuevo || nuevo.length < 3){
-      toast("El PIN debe tener al menos 3 caracteres","warn");
-      return;
-    }
-    localStorage.setItem("hv_hk_pin", nuevo);
-    toast("PIN de Housekeeping actualizado","ok");
-  });
+  toast("Las claves de Housekeeping se gestionan desde el código fuente","info");
 }
 
+// ── Usuarios Housekeeping ──
+const HK_USERS = [
+  {nombre:"Luisa", clave:"luisa26"},
+  {nombre:"Nacha", clave:"nacha26"}
+];
+let hkUsuarioActual = null;
+
 function getHKPIN(){
-  var _p = localStorage.getItem("hv_hk_pin");
-  if(!_p){ _p = "1234"; localStorage.setItem("hv_hk_pin", _p); }
-  return _p;
+  // Legacy — ya no se usa PIN único
+  return null;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -931,6 +930,12 @@ function guardarDatosDirecta(){
 // INIT AL CARGAR
 // ══════════════════════════════════════════════════════════════
 window.addEventListener("DOMContentLoaded", function(){
+  // v4.3 migration: reset admin password and remove old HK PIN
+  if(localStorage.getItem("hv_version")!=="4.3"){
+    localStorage.setItem("hv_admin_clave","administracion");
+    localStorage.removeItem("hv_hk_pin");
+    localStorage.setItem("hv_version","4.3");
+  }
   initDark();
   actualizarAlertaCheckin();
   setInterval(actualizarAlertaCheckin, 60000);
@@ -2163,7 +2168,7 @@ window.addEventListener('unhandledrejection',function(e){console.error('Promise:
     <div class="hk-hdr">
       <img class="hk-hdr-logo" src="" id="hkLogo" alt="Las Vicuñas">
       <div class="hk-hdr-info">
-        <div class="hk-nm">🧹 Housekeeping</div>
+        <div class="hk-nm" id="hkNombre">🧹 Housekeeping</div>
         <div id="hkFecha" class="hk-rol"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
@@ -2931,29 +2936,74 @@ function getNDocumento(){ return document.getElementById("nDocumentoInp")?.value
 let esHousekeeper = false;
 
 function doHousekeeping(){
-  showInput("PIN de Housekeeping:", "", function(pin){
-    if(!pin) return;
-    if(pin === getHKPIN()){
-      esHousekeeper = true;
-      document.getElementById("loginScreen").style.display = "none";
-      document.getElementById("hkApp").style.display = "block";
-      document.getElementById("darkToggle").style.display = "none";
-      document.getElementById("syncBadge").style.display = "none";
-      document.title = "🧹 Housekeeping — Hotel Las Vicuñas";
-      const loginLogo = document.querySelector(".ls-logo");
-      document.getElementById("hkLogo").src = loginLogo ? loginLogo.src : "";
-      const now = new Date();
-      document.getElementById("hkFecha").textContent = now.toLocaleDateString("es-CL",{weekday:"long",day:"numeric",month:"long"});
-      renderHK();
-    } else {
-      toast("PIN incorrecto. Inténtalo de nuevo.", "err", 3000);
-      setTimeout(doHousekeeping, 300); // re-open PIN dialog
-    }
-  });
+  // Mostrar selector de usuario HK
+  const modal = document.createElement("div");
+  modal.id = "hkLoginModal";
+  modal.style.cssText = "position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .18s ease;";
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:28px 24px 22px;width:100%;max-width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+      <div style="font-size:28px;margin-bottom:6px;">🧹</div>
+      <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:800;color:#1a5c2e;margin-bottom:4px;">Housekeeping</div>
+      <div style="font-size:11px;color:#888;margin-bottom:18px;">Selecciona tu nombre e ingresa tu clave</div>
+      <div id="hkUserBtns" style="display:flex;flex-direction:column;gap:10px;">
+        ${HK_USERS.map((u,i)=>`
+          <button onclick="hkLoginStep2(${i})" style="width:100%;padding:14px;background:linear-gradient(135deg,#1a5c2e,#2d9e5e);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(26,92,46,0.25);transition:opacity .15s;">
+            👤 ${u.nombre}
+          </button>
+        `).join("")}
+      </div>
+      <div id="hkPassStep" style="display:none;margin-top:14px;">
+        <div style="font-size:12px;color:#1a5c2e;font-weight:700;margin-bottom:8px;" id="hkPassLabel"></div>
+        <input type="password" id="hkPassInput" placeholder="Clave" style="width:100%;padding:12px 14px;border:1.5px solid #ccc;border-radius:10px;font-size:14px;text-align:center;letter-spacing:2px;font-family:inherit;outline:none;" onkeydown="if(event.key==='Enter')hkLoginConfirm()">
+        <div id="hkPassErr" style="color:#dc2626;font-size:11px;margin-top:6px;min-height:16px;"></div>
+        <button onclick="hkLoginConfirm()" style="width:100%;margin-top:8px;padding:12px;background:linear-gradient(135deg,#1a5c2e,#2d9e5e);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Ingresar</button>
+      </div>
+      <button onclick="document.getElementById('hkLoginModal').remove()" style="margin-top:14px;padding:8px 20px;background:transparent;border:1px solid #ddd;border-radius:8px;color:#888;font-size:12px;cursor:pointer;font-family:inherit;">Cancelar</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener("click", e=>{ if(e.target===modal) modal.remove(); });
+}
+
+var _hkLoginIdx = -1;
+function hkLoginStep2(idx){
+  _hkLoginIdx = idx;
+  document.getElementById("hkUserBtns").style.display = "none";
+  document.getElementById("hkPassStep").style.display = "block";
+  document.getElementById("hkPassLabel").textContent = "Clave de " + HK_USERS[idx].nombre;
+  document.getElementById("hkPassErr").textContent = "";
+  document.getElementById("hkPassInput").value = "";
+  setTimeout(()=>document.getElementById("hkPassInput").focus(), 100);
+}
+
+function hkLoginConfirm(){
+  const pass = document.getElementById("hkPassInput").value;
+  if(!pass) return;
+  if(pass === HK_USERS[_hkLoginIdx].clave){
+    hkUsuarioActual = HK_USERS[_hkLoginIdx].nombre;
+    document.getElementById("hkLoginModal").remove();
+    esHousekeeper = true;
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("hkApp").style.display = "block";
+    document.getElementById("darkToggle").style.display = "none";
+    document.getElementById("syncBadge").style.display = "none";
+    document.title = "🧹 " + hkUsuarioActual + " — Housekeeping";
+    const loginLogo = document.querySelector(".ls-logo");
+    document.getElementById("hkLogo").src = loginLogo ? loginLogo.src : "";
+    document.getElementById("hkNombre").textContent = "🧹 " + hkUsuarioActual;
+    const now = new Date();
+    document.getElementById("hkFecha").textContent = now.toLocaleDateString("es-CL",{weekday:"long",day:"numeric",month:"long"});
+    renderHK();
+  } else {
+    document.getElementById("hkPassErr").textContent = "Clave incorrecta";
+    document.getElementById("hkPassInput").value = "";
+    document.getElementById("hkPassInput").focus();
+  }
 }
 
 function doLogoutHK(){
   esHousekeeper = false;
+  hkUsuarioActual = null;
   document.title = "Hotel Las Vicuñas — Recepción & Housekeeping";
   document.getElementById("hkApp").style.display = "none";
   document.getElementById("loginScreen").style.display = "flex";
@@ -2962,6 +3012,8 @@ function doLogoutHK(){
 }
 
 function renderHK(){
+  // Detectar habitaciones sucias ANTES de leer la lista
+  autoDetectSucias();
   const sucias = getSucias();
   const limpiasHoy = getLimpiasHoy();
   const HOY = hoyISO();
@@ -2970,6 +3022,8 @@ function renderHK(){
 
   // Check-ins de hoy (solo los que tienen habitación asignada)
   const checkinHoy = reservas.filter(r=>r.checkin===HOY && r.roomNum && !r.cancelada).map(r=>r.roomNum);
+  // Check-outs de hoy (salidas)
+  const checkoutHoy = reservas.filter(r=>r.checkout===HOY && r.roomNum && !r.cancelada);
 
   // Stats
   const totalHabs = ALL_ROOMS.length;
@@ -2979,7 +3033,7 @@ function renderHK(){
   document.getElementById("hkStats").innerHTML=`
     <div class="hk-stat dirty"><div class="hk-sv">${nSucias}</div><div class="hk-sl">Pendientes</div></div>
     <div class="hk-stat clean"><div class="hk-sv">${nLimpiasHoy}</div><div class="hk-sl">Limpias hoy</div></div>
-    <div class="hk-stat"><div class="hk-sv">${checkinHoy.length}</div><div class="hk-sl">Check-in hoy</div></div>
+    <div class="hk-stat"><div class="hk-sv">${checkinHoy.length}</div><div class="hk-sl">Llegadas hoy</div></div>
   `;
   document.getElementById("hkFecha").textContent = new Date().toLocaleDateString("es-CL",{weekday:"long",day:"numeric",month:"long"}) + " · " + horaActual;
 
@@ -3001,12 +3055,14 @@ function renderHK(){
       dirtyList.innerHTML = sucias.map(rn=>{
         const tipo = ROOMS[rn]?ROOMS[rn].tipo:"flex";
         const hasCheckin = checkinHoy.includes(rn);
+        const hasCheckout = checkoutHoy.some(r=>r.roomNum===rn);
         return `<div class="hk-room-card" id="hkcard_${rn}">
           <div class="hk-room-num">${rn}</div>
           <div class="hk-room-info">
             <div class="hk-room-tipo">${TIPO_LABEL[tipo]||tipo}</div>
             <div class="hk-room-sub">Habitación ${rn}</div>
-            ${hasCheckin?`<div class="hk-checkin-badge">📅 Check-in hoy</div>`:""}
+            ${hasCheckout?`<div style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;border-radius:4px;padding:2px 6px;display:inline-block;margin-top:3px;">🚪 Sale hoy — prioridad</div>`:""}
+            ${hasCheckin?`<div class="hk-checkin-badge">📅 Llega hoy</div>`:""}
           </div>
           <button class="hk-clean-btn" onclick="hkMarcarLimpia(${rn},this)">✅ Limpia</button>
         </div>`;
@@ -3036,6 +3092,29 @@ function renderHK(){
 
   // Arrivals today section
   const arrivalsSection = document.getElementById("hkArrivalsSection");
+  // -- Departures today (info for HK) --
+  document.querySelectorAll(".hk-dep-section").forEach(el=>el.remove());
+  if(checkoutHoy.length > 0){
+    const depDiv = document.createElement("div");
+    depDiv.className = "hk-section hk-dep-section";
+    depDiv.style.marginTop = "14px";
+    depDiv.innerHTML = `<div class="hk-section-title">🚪 Salidas hoy (${checkoutHoy.length})</div>
+      <div class="hk-room-list">${checkoutHoy.map(r=>{
+        const tipo = ROOMS[r.roomNum]?ROOMS[r.roomNum].tipo:"flex";
+        const yaLimpia = limpiasHoy.includes(r.roomNum);
+        const yaSucia = sucias.includes(r.roomNum);
+        const estado = yaLimpia ? "✅ Ya limpia" : yaSucia ? "🧹 Pendiente de aseo" : "⏳ Esperando salida";
+        return `<div class="hk-room-card${yaLimpia?" is-clean":""}">
+          <div class="hk-room-num">${r.roomNum}</div>
+          <div class="hk-room-info">
+            <div class="hk-room-tipo">${TIPO_LABEL[tipo]||tipo}</div>
+            ${r.nombre?`<div style="font-size:11px;color:#666;">👤 ${esc(r.nombre)}</div>`:""}
+            <div class="hk-room-sub">${estado}</div>
+          </div>
+        </div>`;
+      }).join("")}</div>`;
+    arrivalsSection.parentNode.insertBefore(depDiv, arrivalsSection);
+  }
   const arrivalsData = reservas.filter(r=>r.checkin===HOY && r.roomNum && !r.cancelada);
   if(arrivalsData.length === 0){
     arrivalsSection.style.display = "none";
@@ -3270,7 +3349,8 @@ function hkDeclararProact(tareaId){
         tareaId: tarea.id,
         fecha: hoyISO(),
         hora: new Date().toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"}),
-        pts: tarea.pts
+        pts: tarea.pts,
+        usuario: hkUsuarioActual || "—"
       });
       saveProactLog(log);
       hkCloseProactPicker();
@@ -4038,19 +4118,8 @@ function rDisp(){
   const tipoCls={familiar:"bt-fam",triple:"bt-tri",matrimonial:"bt-mat",flex:"bt-flex"};
   const tipoLbl={familiar:"Fam",triple:"Tri",matrimonial:"Mat",flex:"Flex"};
 
-  // Auto-detectar habitaciones que necesitan aseo:
-  // checkout <= HOY (hoy o días pasados) y no están ya marcadas ni limpias hoy
-  // Esto cubre el caso donde la app no se abrió el día del checkout.
-  const bkRes=getBookingReservas();
-  const todasRes=[...reservas,...bkRes];
-  const limpiasHoyArr=getLimpiasHoy();
-  todasRes.forEach(r=>{
-    if(r.checkout<=HOY && r.roomNum && !r.cancelada && !sucias.includes(r.roomNum) && !limpiasHoyArr.includes(r.roomNum)){
-      // Verificar que la habitación NO tenga un huésped actual (checkout pasado pero hay otra reserva activa)
-      const ocupadaAhora=todasRes.some(o=>o.roomNum===r.roomNum&&o.checkin<=HOY&&o.checkout>HOY&&!o.cancelada);
-      if(!ocupadaAhora) marcarSucia(r.roomNum, false);
-    }
-  });
+  // Auto-detectar habitaciones que necesitan aseo
+  autoDetectSucias();
 
   // Render panel de aseo (solo para admin)
   if(esAdmin) renderAseoPanel();
@@ -4305,6 +4374,22 @@ function getLimpiasHoy(){
 function saveLimpiasHoy(arr){
   const hoy=hoyISO();
   localStorage.setItem("hv_limpias_hoy",JSON.stringify({fecha:hoy,rooms:arr}));
+}
+
+// Auto-detectar habitaciones que necesitan aseo:
+// checkout <= HOY y no están ya marcadas ni limpias hoy.
+// Se llama desde rDisp() Y desde renderHK() para cubrir ambos modos.
+function autoDetectSucias(){
+  const HOY=hoyISO();
+  const sucias=getSucias();
+  const limpiasHoyArr=getLimpiasHoy();
+  const todasRes=[...getReservas(),...getBookingReservas()];
+  todasRes.forEach(r=>{
+    if(r.checkout<=HOY && r.roomNum && !r.cancelada && !sucias.includes(r.roomNum) && !limpiasHoyArr.includes(r.roomNum)){
+      const ocupadaAhora=todasRes.some(o=>o.roomNum===r.roomNum&&o.checkin<=HOY&&o.checkout>HOY&&!o.cancelada);
+      if(!ocupadaAhora) marcarSucia(r.roomNum, false);
+    }
+  });
 }
 
 function marcarSucia(rn, redraw=true){
